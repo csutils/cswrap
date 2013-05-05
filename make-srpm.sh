@@ -74,13 +74,19 @@ BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Experimentally used by cov-mockbuild, not yet fully documented.
 
 %prep
+rm -rf %{name}-%{version}
+install -m0755 -d %{name}-%{version}
+cd %{name}-%{version}
 install -m0644 %{SOURCE0} %{SOURCE1} .
 
 %build
+cd %{name}-%{version}
 make %{?_smp_mflags}
 
 %check
-export PATH=\$RPM_BUILD_ROOT%{_libdir}/abscc:\$PATH
+cd %{name}-%{version}
+PATH=\$RPM_BUILD_ROOT%{_libdir}/abscc:\$PATH
+export PATH
 make clean
 make %{?_smp_mflags} CFLAGS="-ansi -pedantic" 2>&1 | grep "\$PWD" > /dev/null
 
@@ -88,6 +94,7 @@ make %{?_smp_mflags} CFLAGS="-ansi -pedantic" 2>&1 | grep "\$PWD" > /dev/null
 rm -rf "\$RPM_BUILD_ROOT"
 
 %install
+cd %{name}-%{version}
 rm -rf "\$RPM_BUILD_ROOT"
 
 install -m0755 -d \\
@@ -104,6 +111,9 @@ for i in c++ cc g++ gcc \\
 do
     ln -s ../../bin/abscc "\$RPM_BUILD_ROOT%{_libdir}/abscc/\$i"
 done
+
+# force generating the %{name}-debuginfo package
+%{debug_package}
 
 %files
 %defattr(-,root,root,-)
