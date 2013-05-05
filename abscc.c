@@ -40,7 +40,7 @@ static int fail(const char *msg)
 }
 
 /* return heap-allocated canonicalized tool name, NULL if not found */
-static char* find_tool_in_dir(const char *base_name, const char *dir)
+static char* find_exe_in_dir(const char *base_name, const char *dir, bool *self)
 {
     /* concatenate dirname and basename */
     char *raw_path;
@@ -53,15 +53,16 @@ static char* find_tool_in_dir(const char *base_name, const char *dir)
     if (!exec_path)
         return NULL;
 
-    /* avoid executing self so that we do not end up in an infinite loop */
-    if (!strcmp(prog_name, basename(exec_path)))
-        goto fail;
-
     /* check whether the file exists and we can execute it */
     if (-1 == access(exec_path, X_OK))
         goto fail;
 
-    return exec_path;
+    if (!!strcmp(prog_name, basename(exec_path)))
+        /* found! */
+        return exec_path;
+
+    /* avoid executing self so that we do not end up in an infinite loop */
+    *self = true;
 
 fail:
     free(exec_path);
@@ -83,7 +84,8 @@ static char* find_tool_in_path(const char *base_name)
             /* temporarily replace the separator by zero */
             *term = '\0';
 
-        char *exec_path = find_tool_in_dir(base_name, /* single dir */ path);
+        bool self = false;
+        char *exec_path = find_exe_in_dir(base_name, /* dir */ path, &self);
 
         if (term)
             /* restore the original separator */
@@ -97,8 +99,15 @@ static char* find_tool_in_path(const char *base_name)
             /* this was the last path in $PATH */
             return NULL;
 
-        /* move the cursor behind the separator */
-        path = term + 1;
+        /* jump to the next path in $PATH */
+        char *const next = term + 1;
+
+        if (self)
+            /* remove self from $PATH */
+            memmove(path, next, strlen(next));
+
+        /* move the cursor */
+        path = next;
     }
 }
 

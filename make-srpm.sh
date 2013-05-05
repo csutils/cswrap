@@ -79,6 +79,11 @@ install -m0644 %{SOURCE0} %{SOURCE1} .
 %build
 make %{?_smp_mflags}
 
+%check
+export PATH=\$RPM_BUILD_ROOT%{_libdir}/abscc:\$PATH
+make clean
+make %{?_smp_mflags} CFLAGS="-ansi -pedantic" 2>&1 | grep "\$PWD" > /dev/null
+
 %clean
 rm -rf "\$RPM_BUILD_ROOT"
 
