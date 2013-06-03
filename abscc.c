@@ -221,6 +221,10 @@ int main(int argc, char *argv[])
                     break;
                 }
             }
+
+            if (WIFEXITED(status))
+                /* propagate the exit status of the child */
+                status = WEXITSTATUS(status);
     }
 
     free(exec_path);
