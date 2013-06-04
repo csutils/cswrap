@@ -21,6 +21,7 @@
 
 #include <errno.h>
 #include <libgen.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,9 +34,16 @@
 char prog_name[] = "abscc";
 
 /* print error and return EXIT_FAILURE */
-static int fail(const char *msg)
+static int fail(const char *fmt, ...)
 {
-    fprintf(stderr, "%s: error: %s\n", prog_name, msg);
+    va_list ap;
+    va_start(ap, fmt);
+
+    fprintf(stderr, "%s: error: ", prog_name);
+    vfprintf(stderr, fmt, ap);
+    fputc('\n', stderr);
+
+    va_end(ap);
     return EXIT_FAILURE;
 }
 
@@ -175,8 +183,9 @@ int main(int argc, char *argv[])
     /* find the requested tool in $PATH */
     char *exec_path = find_tool_in_path(base_name);
     if (!exec_path) {
+        fail("executable not found: %s (%s)", base_name, argv[0]);
         free(base_name);
-        return fail("requested executable not found");
+        return EXIT_FAILURE;
     }
 
     /* create a pipe from stderr of the compiler to stdin of the filter */
@@ -184,32 +193,32 @@ int main(int argc, char *argv[])
     if (-1 == pipe(pipefd)) {
         free(exec_path);
         free(base_name);
-        return fail("pipe failed");
+        return fail("pipe() failed: %s", strerror(errno));
     }
 
     int status;
     const pid_t pid = fork();
     switch (pid) {
         case -1:
-            status = fail("fork() failed");
+            status = fail("fork() failed: %s", strerror(errno));
             break;
 
         case 0:
             /* run the compiler and redirect its stderr to the pipe */
             close(pipefd[/* rd */ 0]);
             if (-1 == dup2(pipefd[/* wr */ 1], STDERR_FILENO)) {
-                status = fail("unable to redirect stderr");
+                status = fail("unable to redirect stderr: %s", strerror(errno));
                 break;
             }
             execv(exec_path, argv);
-            status = fail("execv() failed");
+            status = fail("execv() failed: %s", strerror(errno));
             break;
 
         default:
             /* run the filter and redirect its stdin from the pipe */
             close(pipefd[/* wr */ 1]);
             if (-1 == dup2(pipefd[/* rd */ 0], STDIN_FILENO)) {
-                status = fail("unable to redirect stdin");
+                status = fail("unable to redirect stdin: %s", strerror(errno));
                 break;
             }
             trans_paths_to_abs(/* exclude */ base_name);
@@ -217,7 +226,7 @@ int main(int argc, char *argv[])
             /* wait for the child to exit */
             while (-1 == wait(&status)) {
                 if (EINTR != errno) {
-                    status = fail("wait() failed");
+                    status = fail("wait() failed: %s", strerror(errno));
                     break;
                 }
             }
@@ -225,6 +234,8 @@ int main(int argc, char *argv[])
             if (WIFEXITED(status))
                 /* propagate the exit status of the child */
                 status = WEXITSTATUS(status);
+            else
+                status = fail("unexpected child status: %s", status);
     }
 
     free(exec_path);
