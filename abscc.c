@@ -119,6 +119,81 @@ static char* find_tool_in_path(const char *base_name)
     }
 }
 
+enum flag_op {
+    FO_ADD,
+    FO_DEL
+};
+
+/* delete an argument from the argv array */
+void del_arg(char *argv[])
+{
+    int i;
+    for (i = 0; argv[i]; ++i)
+        argv[i] = argv[i + 1];
+}
+
+/* add/del a single flag from the argv array */
+void handle_flag(char *argv[], const enum flag_op op, const char *flag)
+{
+    while (*argv) {
+        if (!!strcmp(*argv, flag)) {
+            /* not the flag we are looking for */
+            ++argv;
+            continue;
+        }
+
+        switch (op) {
+            case FO_ADD:
+                /* the flag is already there, this will be a no-op */
+                return;
+
+            case FO_DEL:
+                del_arg(argv);
+        }
+    }
+
+    if (FO_ADD == op)
+        /* FIXME: this may cause invalid write or break termination of argv! */
+        *argv = strdup(flag);
+}
+
+void handle_cvar(char *argv[], const enum flag_op op, const char *env_var_name)
+{
+    char *slist = getenv(env_var_name);
+    if (!slist || !slist[0])
+        return;
+
+    /* go through all flags separated by ':' */
+    for (;;) {
+        char *term = strchr(slist, ':');
+        if (term)
+            /* temporarily replace the separator by zero */
+            *term = '\0';
+
+        /* go through the argument list */
+        handle_flag(argv, op, slist);
+
+        if (term)
+            /* restore the original separator */
+            *term = ':';
+
+        if (!term)
+            /* this was the last flag */
+            break;
+
+        /* jump to the next flag */
+        slist = term + 1;
+    }
+}
+
+void translate_args(char *argv[], const char *base_name)
+{
+    /* branch by C/C++ based on base_name */
+    const bool is_c = !strstr(base_name, "++");
+    handle_cvar(argv, FO_DEL, is_c ? "ABSCC_DEL_CFLAGS" : "ABSCC_DEL_CXXFLAGS");
+    handle_cvar(argv, FO_ADD, is_c ? "ABSCC_ADD_CFLAGS" : "ABSCC_ADD_CXXFLAGS");
+}
+
 /* per-line handler of trans_paths_to_abs() */
 bool handle_line(char *buf, const char *exclude)
 {
@@ -187,6 +262,17 @@ int main(int argc, char *argv[])
         free(base_name);
         return EXIT_FAILURE;
     }
+
+    /* FIXME: replace this by something useful */
+    char **argv_dst = malloc(/* FIXME */ 0x1000 * sizeof(*argv));
+    int i;
+    for (i = 0; argv[i]; ++i)
+        argv_dst[i] = argv[i];
+    argv_dst[i] = NULL;
+    argv = argv_dst;
+
+    /* add/del C{,XX}FLAGS per $ABSCC_C{,XX}FLAGS_{ADD,DEL} */
+    translate_args(argv, base_name);
 
     /* create a pipe from stderr of the compiler to stdin of the filter */
     int pipefd[2];
