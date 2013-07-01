@@ -349,7 +349,7 @@ int main(int argc, char *argv[])
             while (-1 == wait(&status)) {
                 if (EINTR != errno) {
                     status = fail("wait() failed: %s", strerror(errno));
-                    break;
+                    goto cleanup;
                 }
             }
 
@@ -360,6 +360,7 @@ int main(int argc, char *argv[])
                 status = fail("unexpected child status: %s", status);
     }
 
+cleanup:
     free(exec_path);
     free(base_name);
     return status;
