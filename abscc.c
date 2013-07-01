@@ -119,6 +119,16 @@ static char* find_tool_in_path(const char *base_name)
     }
 }
 
+char** clone_argv(int argc, char *argv[])
+{
+    size_t size = (argc + 1) * sizeof(*argv);
+    char **dup = malloc(size);
+    if (!dup)
+        return NULL;
+
+    return memcpy(dup, argv, size);
+}
+
 enum flag_op {
     FO_ADD,
     FO_DEL
@@ -133,11 +143,14 @@ void del_arg(char *argv[])
 }
 
 /* add/del a single flag from the argv array */
-void handle_flag(char *argv[], const enum flag_op op, const char *flag)
+bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
 {
+    int argc = 0;
+    char **argv = *pargv;
     while (*argv) {
         if (!!strcmp(*argv, flag)) {
             /* not the flag we are looking for */
+            ++argc;
             ++argv;
             continue;
         }
@@ -145,23 +158,37 @@ void handle_flag(char *argv[], const enum flag_op op, const char *flag)
         switch (op) {
             case FO_ADD:
                 /* the flag is already there, this will be a no-op */
-                return;
+                return true;
 
             case FO_DEL:
                 del_arg(argv);
         }
     }
 
-    if (FO_ADD == op)
-        /* FIXME: this may cause invalid write or break termination of argv! */
-        *argv = strdup(flag);
+    if (FO_ADD != op)
+        /* unless we are adding a new flag, we are done */
+        return true;
+
+    *pargv = argv = realloc(*pargv, (argc + 2) * sizeof(*argv));
+    if (!argv)
+        /* out of memory */
+        return false;
+
+    char *flag_dup = strdup(flag);
+    if (!flag_dup)
+        /* out of memory */
+        return false;
+
+    argv[argc] = flag_dup;
+    argv[argc + 1] = NULL;
+    return true;
 }
 
-void handle_cvar(char *argv[], const enum flag_op op, const char *env_var_name)
+bool handle_cvar(char ***pargv, const enum flag_op op, const char *env_var_name)
 {
     char *slist = getenv(env_var_name);
     if (!slist || !slist[0])
-        return;
+        return true;
 
     /* go through all flags separated by ':' */
     for (;;) {
@@ -171,27 +198,35 @@ void handle_cvar(char *argv[], const enum flag_op op, const char *env_var_name)
             *term = '\0';
 
         /* go through the argument list */
-        handle_flag(argv, op, slist);
+        const bool ok = handle_flag(pargv, op, slist);
 
         if (term)
             /* restore the original separator */
             *term = ':';
 
+        if (!ok)
+            /* propagate the error back to the caller */
+            return false;
+
         if (!term)
             /* this was the last flag */
-            break;
+            return true;
 
         /* jump to the next flag */
         slist = term + 1;
     }
 }
 
-void translate_args(char *argv[], const char *base_name)
+bool translate_args(char ***pargv, const char *base_name)
 {
     /* branch by C/C++ based on base_name */
     const bool is_c = !strstr(base_name, "++");
-    handle_cvar(argv, FO_DEL, is_c ? "ABSCC_DEL_CFLAGS" : "ABSCC_DEL_CXXFLAGS");
-    handle_cvar(argv, FO_ADD, is_c ? "ABSCC_ADD_CFLAGS" : "ABSCC_ADD_CXXFLAGS");
+    char *del_env = (is_c) ? "ABSCC_DEL_CFLAGS" : "ABSCC_DEL_CXXFLAGS";
+    char *add_env = (is_c) ? "ABSCC_ADD_CFLAGS" : "ABSCC_ADD_CXXFLAGS";
+
+    /* del/add flags as requested */
+    return handle_cvar(pargv, FO_DEL, del_env)
+        && handle_cvar(pargv, FO_ADD, add_env);
 }
 
 /* per-line handler of trans_paths_to_abs() */
@@ -251,9 +286,21 @@ int main(int argc, char *argv[])
     if (argc < 1)
         return fail("argc < 1");
 
+    /* clone argv[] */
+    argv = clone_argv(argc, argv);
+    if (!argv)
+        return fail("insufficient memory to clone argv[]");
+
+    /* obtain base name of the executable being run */
     char *base_name = strdup(basename(argv[0]));
     if (!base_name)
         return fail("basename() failed");
+
+    /* add/del C{,XX}FLAGS per $ABSCC_C{,XX}FLAGS_{ADD,DEL} */
+    if (!translate_args(&argv, base_name)) {
+        free(base_name);
+        return fail("insufficient memory to append a flag");
+    }
 
     /* find the requested tool in $PATH */
     char *exec_path = find_tool_in_path(base_name);
@@ -262,17 +309,6 @@ int main(int argc, char *argv[])
         free(base_name);
         return EXIT_FAILURE;
     }
-
-    /* FIXME: replace this by something useful */
-    char **argv_dst = malloc(/* FIXME */ 0x1000 * sizeof(*argv));
-    int i;
-    for (i = 0; argv[i]; ++i)
-        argv_dst[i] = argv[i];
-    argv_dst[i] = NULL;
-    argv = argv_dst;
-
-    /* add/del C{,XX}FLAGS per $ABSCC_C{,XX}FLAGS_{ADD,DEL} */
-    translate_args(argv, base_name);
 
     /* create a pipe from stderr of the compiler to stdin of the filter */
     int pipefd[2];
