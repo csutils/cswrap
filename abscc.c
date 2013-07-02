@@ -19,8 +19,11 @@
 
 #define _GNU_SOURCE 
 
+#include <assert.h>
 #include <errno.h>
+#include <fcntl.h>           /* for O_* constants */
 #include <libgen.h>
+#include <semaphore.h>       /* for named semaphores */
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -45,6 +48,94 @@ static int fail(const char *fmt, ...)
 
     va_end(ap);
     return EXIT_FAILURE;
+}
+
+static FILE *cap_file;
+const char *cap_file_name;
+
+sem_t *cap_file_lock;
+static const char cap_file_lock_name[] = "/abscc_cap_file_lock";
+
+void init_cap_file_name(void)
+{
+    char *name = getenv("ABSCC_CAP_FILE");
+    if (name && name[0])
+        cap_file_name = name;
+}
+
+bool unlock_cap_file(void)
+{
+    if (!sem_post(cap_file_lock))
+        return true;
+
+    fail("failed to unlock %s (%s)", cap_file_lock_name, strerror(errno));
+    return false;
+}
+
+void close_cap_file_lock(void)
+{
+    assert(cap_file_lock);
+    sem_close(cap_file_lock);
+    cap_file_lock = NULL;
+}
+
+bool init_cap_file_once(void)
+{
+    if (cap_file)
+        /* already initialized */
+        return true;
+
+    assert(!cap_file_lock);
+    if (!cap_file_name)
+        /* capture file not enabled */
+        return false;
+
+    /* TODO: check there are no interferences between mock chroots */
+    cap_file_lock = sem_open(cap_file_lock_name, O_CREAT, 0660, 1);
+    if (!cap_file_lock) {
+        fail("failed to open %s (%s)", cap_file_lock_name, strerror(errno));
+        return false;
+    }
+
+    /* wait for other processes to release the capture file lock */
+    while (-1 == sem_wait(cap_file_lock)) {
+        if (EAGAIN == errno)
+            continue;
+
+        fail("failed to lock %s (%s)", cap_file_lock_name, strerror(errno));
+        close_cap_file_lock();
+        return false;
+    }
+
+    /* open/create the capture file */
+    cap_file = fopen(cap_file_name, "a");
+    if (!cap_file) {
+        fail("failed to open %s (%s)", cap_file_name, strerror(errno));
+        unlock_cap_file();
+        close_cap_file_lock();
+        return false;
+    }
+
+    /* capture file successfully initialized */
+    return true;
+}
+
+void release_cap_file(void)
+{
+    if (!cap_file)
+        /* nothing to close */
+        return;
+
+    if (ferror(cap_file))
+        fail("error writing to %s", cap_file_name);
+
+    /* close the capture file */
+    fclose(cap_file);
+    cap_file = NULL;
+
+    /* unlock and release the lock */
+    unlock_cap_file();
+    close_cap_file_lock();
 }
 
 /* return heap-allocated canonicalized tool name, NULL if not found */
@@ -258,6 +349,12 @@ bool handle_line(char *buf, const char *exclude)
     if (!abs_path)
         return false;
 
+    if (init_cap_file_once()) {
+        /* write the message also to capture file if the feature is enabled */
+        fputs(abs_path, cap_file);
+        fputs(colon,    cap_file);
+    }
+
     /* first write the canonicalized file name */
     fputs(abs_path, stderr);
     free(abs_path);
@@ -270,6 +367,9 @@ bool handle_line(char *buf, const char *exclude)
 /* canonicalize paths the lines from stdin start with, write them to stderr */
 void trans_paths_to_abs(const char *exclude)
 {
+    /* check whether we should capture diagnostic messages to a file */
+    init_cap_file_name();
+
     /* handle the input from stdin line by line */
     char *buf = NULL;
     size_t buf_size = 0;
@@ -279,6 +379,9 @@ void trans_paths_to_abs(const char *exclude)
 
     /* release line buffer */
     free(buf);
+
+    /* close the capture file and release the lock in case it has been open */
+    release_cap_file();
 }
 
 int main(int argc, char *argv[])

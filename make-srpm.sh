@@ -81,7 +81,7 @@ install -m0644 %{SOURCE0} %{SOURCE1} .
 
 %build
 cd %{name}-%{version}
-make %{?_smp_mflags} CFLAGS="\$RPM_OPT_FLAGS" LDFLAGS="\$RPM_OPT_FLAGS"
+make %{?_smp_mflags} CFLAGS="\$RPM_OPT_FLAGS" LDFLAGS="\$RPM_OPT_FLAGS -lrt"
 
 %check
 cd %{name}-%{version}
