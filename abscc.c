@@ -260,10 +260,12 @@ bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
         /* unless we are adding a new flag, we are done */
         return true;
 
-    *pargv = argv = realloc(*pargv, (argc + 2) * sizeof(*argv));
-    if (!argv)
+    argv = realloc(*pargv, (argc + 2) * sizeof(*argv));
+    if (!argv) {
         /* out of memory */
+        free(*pargv);
         return false;
+    }
 
     char *flag_dup = strdup(flag);
     if (!flag_dup)
@@ -272,6 +274,8 @@ bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
 
     argv[argc] = flag_dup;
     argv[argc + 1] = NULL;
+
+    *pargv = argv;
     return true;
 }
 
