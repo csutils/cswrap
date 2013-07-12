@@ -70,7 +70,9 @@ Source1:    http://git.engineering.redhat.com/?p=users/kdudka/coverity-scan.git;
 
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
+%if (0%{?fedora} >= 12 || 0%{?rhel} >= 6)
 BuildRequires: glibc-static
+%endif
 
 %description
 Experimentally used by cov-mockbuild, not yet fully documented.
