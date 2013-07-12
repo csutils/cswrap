@@ -70,6 +70,8 @@ Source1:    http://git.engineering.redhat.com/?p=users/kdudka/coverity-scan.git;
 
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
+BuildRequires: glibc-static
+
 %description
 Experimentally used by cov-mockbuild, not yet fully documented.
 
@@ -81,7 +83,9 @@ install -m0644 %{SOURCE0} %{SOURCE1} .
 
 %build
 cd %{name}-%{version}
-make %{?_smp_mflags} CFLAGS="\$RPM_OPT_FLAGS" LDFLAGS="\$RPM_OPT_FLAGS -lrt"
+make %{?_smp_mflags} \
+    CFLAGS="\$RPM_OPT_FLAGS" \
+    LDFLAGS="\$RPM_OPT_FLAGS -static -pthread"
 
 %check
 cd %{name}-%{version}
