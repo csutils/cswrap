@@ -261,7 +261,9 @@ bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
         return true;
 
     argv = realloc(*pargv, (argc + 2) * sizeof(*argv));
-    if (!argv) {
+    if (argv)
+        *pargv = argv;
+    else {
         /* out of memory */
         free(*pargv);
         return false;
@@ -274,8 +276,6 @@ bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
 
     argv[argc] = flag_dup;
     argv[argc + 1] = NULL;
-
-    *pargv = argv;
     return true;
 }
 
@@ -316,8 +316,8 @@ bool translate_args(char ***pargv, const char *base_name)
 {
     /* branch by C/C++ based on base_name */
     const bool is_c = !strstr(base_name, "++");
-    char *del_env = (is_c) ? "ABSCC_DEL_CFLAGS" : "ABSCC_DEL_CXXFLAGS";
-    char *add_env = (is_c) ? "ABSCC_ADD_CFLAGS" : "ABSCC_ADD_CXXFLAGS";
+    const char *del_env = (is_c) ? "ABSCC_DEL_CFLAGS" : "ABSCC_DEL_CXXFLAGS";
+    const char *add_env = (is_c) ? "ABSCC_ADD_CFLAGS" : "ABSCC_ADD_CXXFLAGS";
 
     /* del/add flags as requested */
     return handle_cvar(pargv, FO_DEL, del_env)
