@@ -130,7 +130,8 @@ void release_cap_file(void)
         fail("error writing to %s", cap_file_name);
 
     /* close the capture file */
-    fclose(cap_file);
+    if (fclose(cap_file))
+        fail("error closing %s (%s)", cap_file_name, strerror(errno));
     cap_file = NULL;
 
     /* unlock and release the lock */
