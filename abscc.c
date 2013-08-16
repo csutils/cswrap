@@ -247,14 +247,8 @@ bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
             continue;
         }
 
-        switch (op) {
-            case FO_ADD:
-                /* the flag is already there, this will be a no-op */
-                return true;
-
-            case FO_DEL:
-                del_arg(argv);
-        }
+        if (FO_DEL == op)
+            del_arg(argv);
     }
 
     if (FO_ADD != op)
