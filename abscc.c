@@ -240,15 +240,12 @@ bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
     int argc = 0;
     char **argv = *pargv;
     while (*argv) {
-        if (!!strcmp(*argv, flag)) {
-            /* not the flag we are looking for */
+        if (FO_DEL == op && !strcmp(*argv, flag))
+            del_arg(argv);
+        else {
             ++argc;
             ++argv;
-            continue;
         }
-
-        if (FO_DEL == op)
-            del_arg(argv);
     }
 
     if (FO_ADD != op)
