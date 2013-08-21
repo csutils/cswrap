@@ -316,9 +316,46 @@ bool translate_args(char ***pargv, const char *base_name)
         && handle_cvar(pargv, FO_ADD, add_env);
 }
 
+struct str_item {
+    const char *str;
+    size_t      len;
+};
+
+#define STR_ITEM(str) { str, sizeof(str) - 1U }
+
+struct str_item msg_prefixes[] = {
+    STR_ITEM("In file included from "),
+    STR_ITEM("                 from "),
+    { NULL, 0U }
+};
+
+void write_out(FILE *fp, char *buf_orig, char *buf, char *abs_path, char *colon)
+{
+    /* write the prefix if any */
+    const char stash = buf[0];
+    buf[0] = '\0';
+    fputs(buf_orig, fp);
+    buf[0] = stash;
+
+    /* write absolute path */
+    fputs(abs_path, fp);
+
+    /* write the rest of the message */
+    fputs(colon, fp);
+}
+
 /* per-line handler of trans_paths_to_abs() */
 bool handle_line(char *buf, const char *exclude)
 {
+    char *const buf_orig = buf;
+    struct str_item *item;
+    for (item = msg_prefixes; item->str; ++item) {
+        if (!strncmp(buf, item->str, item->len)) {
+            buf += item->len;
+            break;
+        }
+    }
+
     char *colon = strchr(buf, ':');
     if (!colon)
         /* no colon in this line, skip it! */
@@ -345,18 +382,14 @@ bool handle_line(char *buf, const char *exclude)
     if (!abs_path)
         return false;
 
-    if (init_cap_file_once()) {
+    /* write the translated message to stderr */
+    write_out(stderr, buf_orig, buf, abs_path, colon);
+
+    if (init_cap_file_once())
         /* write the message also to capture file if the feature is enabled */
-        fputs(abs_path, cap_file);
-        fputs(colon,    cap_file);
-    }
+        write_out(cap_file, buf_orig, buf, abs_path, colon);
 
-    /* first write the canonicalized file name */
-    fputs(abs_path, stderr);
     free(abs_path);
-
-    /* then write the colon and the rest of the line unchanged */
-    fputs(colon, stderr);
     return true;
 }
 
