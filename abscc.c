@@ -369,9 +369,16 @@ void trans_paths_to_abs(const char *exclude)
     /* handle the input from stdin line by line */
     char *buf = NULL;
     size_t buf_size = 0;
-    while (0 < getline(&buf, &buf_size, stdin))
-        if (!handle_line(buf, exclude))
-            fputs(buf, stderr);
+    while (0 < getline(&buf, &buf_size, stdin)) {
+        if (handle_line(buf, exclude))
+            continue;
+
+        fputs(buf, stderr);
+
+        if (init_cap_file_once())
+            /* write the message also to capture file if the feature is enabled */
+            fputs(buf, cap_file);
+    }
 
     /* release line buffer */
     free(buf);
