@@ -316,6 +316,16 @@ bool translate_args(char ***pargv, const char *base_name)
         && handle_cvar(pargv, FO_ADD, add_env);
 }
 
+/* return true if any of the command-line args is equal to "conftest.c" */
+bool find_conftest_in_args(char **argv)
+{
+    for (; *argv; ++argv)
+        if (!strcmp(*argv, "conftest.c"))
+            return true;
+
+    return false;
+}
+
 struct str_item {
     const char *str;
     size_t      len;
@@ -435,18 +445,24 @@ int main(int argc, char *argv[])
     if (!base_name)
         return fail("basename() failed");
 
-    /* add/del C{,XX}FLAGS per $ABSCC_C{,XX}FLAGS_{ADD,DEL} */
-    if (!translate_args(&argv, base_name)) {
-        free(base_name);
-        return fail("insufficient memory to append a flag");
-    }
-
     /* find the requested tool in $PATH */
     char *exec_path = find_tool_in_path(base_name);
     if (!exec_path) {
         fail("executable not found: %s (%s)", base_name, argv[0]);
         free(base_name);
         return EXIT_FAILURE;
+    }
+
+    if (find_conftest_in_args(argv)) {
+        /* do not change anything when compiling conftest.c */
+        execv(exec_path, argv);
+        return fail("execv() failed: %s", strerror(errno));
+    }
+
+    /* add/del C{,XX}FLAGS per $ABSCC_C{,XX}FLAGS_{ADD,DEL} */
+    if (!translate_args(&argv, base_name)) {
+        free(base_name);
+        return fail("insufficient memory to append a flag");
     }
 
     /* create a pipe from stderr of the compiler to stdin of the filter */
