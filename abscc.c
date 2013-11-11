@@ -339,7 +339,13 @@ struct str_item msg_prefixes[] = {
     { NULL, 0U }
 };
 
-void write_out(FILE *fp, char *buf_orig, char *buf, char *abs_path, char *colon)
+void write_out(
+        FILE                       *fp,
+        char                       *buf_orig,
+        char                       *buf,
+        char                       *abs_path,
+        char                       *colon,
+        const char                 *tool)
 {
     /* write the prefix if any */
     const char stash = buf[0];
@@ -350,8 +356,19 @@ void write_out(FILE *fp, char *buf_orig, char *buf, char *abs_path, char *colon)
     /* write absolute path */
     fputs(abs_path, fp);
 
+    const size_t len = strlen(colon);
+    if (!len || colon[len - 1U] != '\n')
+        /* nothing useful remains to be printed */
+        return;
+
+    /* drop the trailing new-line */
+    colon[len - 1U] = '\0';
+
     /* write the rest of the message */
     fputs(colon, fp);
+
+    /* write the " <--[tool]" suffix */
+    fprintf(fp, " <--[%s]\n", tool);
 }
 
 /* per-line handler of trans_paths_to_abs() */
@@ -393,11 +410,11 @@ bool handle_line(char *buf, const char *exclude)
         return false;
 
     /* write the translated message to stderr */
-    write_out(stderr, buf_orig, buf, abs_path, colon);
+    write_out(stderr, buf_orig, buf, abs_path, colon, /* tool */ exclude);
 
     if (init_cap_file_once())
         /* write the message also to capture file if the feature is enabled */
-        write_out(cap_file, buf_orig, buf, abs_path, colon);
+        write_out(cap_file, buf_orig, buf, abs_path, colon, /* tool */ exclude);
 
     free(abs_path);
     return true;
