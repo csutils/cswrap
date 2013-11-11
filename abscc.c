@@ -361,11 +361,10 @@ void write_out(
         /* nothing useful remains to be printed */
         return;
 
-    /* drop the trailing new-line */
+    /* write the rest of the message without the trailing new-line */
     colon[len - 1U] = '\0';
-
-    /* write the rest of the message */
     fputs(colon, fp);
+    colon[len - 1U] = '\n';
 
     /* write the " <--[tool]" suffix */
     fprintf(fp, " <--[%s]\n", tool);
