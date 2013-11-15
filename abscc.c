@@ -23,7 +23,9 @@
 #include <errno.h>
 #include <fcntl.h>           /* for O_* constants */
 #include <libgen.h>
+#include <limits.h>
 #include <semaphore.h>       /* for named semaphores */
+#include <signal.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -446,6 +448,48 @@ void trans_paths_to_abs(const char *exclude)
     release_cap_file();
 }
 
+static pid_t tool_pid;
+
+void timeout_handler(int signum)
+{
+    (void) signum;
+    if (!tool_pid)
+        return;
+
+    /* time elapsed, kill the tool now! */
+    const int saved_errno = errno;
+    kill(tool_pid, SIGKILL);
+    errno = saved_errno;
+}
+
+int /* status */ install_timeout_handler(void)
+{
+    const char *str_time = getenv("ABSCC_TIMEOUT");
+    if (!str_time || !str_time[0])
+        /* no timeout requested */
+        return EXIT_SUCCESS;
+
+    /* parse the timeout value */
+    long time;
+    char c;
+    if (1 != sscanf(str_time, "%li%c", &time, &c))
+        return fail("unable to parse the value of $ABSCC_TIMEOUT");
+
+    if (UINT_MAX < time || time <= 0L)
+        return fail("the value of $ABSCC_TIMEOUT is out of range");
+
+    /* install SIGALRM handler */
+    static const struct sigaction sa = {
+        .sa_handler = timeout_handler
+    };
+    if (0 != sigaction(SIGALRM, &sa, NULL))
+        return fail("unable to install timeout handler");
+
+    /* activate the timeout! */
+    alarm((unsigned)time);
+    return EXIT_SUCCESS;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 1)
@@ -490,8 +534,8 @@ int main(int argc, char *argv[])
     }
 
     int status;
-    const pid_t pid = fork();
-    switch (pid) {
+    tool_pid = fork();
+    switch (tool_pid) {
         case -1:
             status = fail("fork() failed: %s", strerror(errno));
             break;
@@ -514,6 +558,11 @@ int main(int argc, char *argv[])
                 status = fail("unable to redirect stdin: %s", strerror(errno));
                 break;
             }
+
+            status = install_timeout_handler();
+            if (EXIT_SUCCESS != status)
+                break;
+
             trans_paths_to_abs(/* exclude */ base_name);
 
             /* wait for the child to exit */
@@ -523,6 +572,9 @@ int main(int argc, char *argv[])
                     goto cleanup;
                 }
             }
+
+            /* deactivate alarm (if any) */
+            alarm(0U);
 
             if (WIFEXITED(status))
                 /* propagate the exit status of the child */
