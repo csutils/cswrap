@@ -528,7 +528,7 @@ int main(int argc, char *argv[])
                 /* propagate the exit status of the child */
                 status = WEXITSTATUS(status);
             else
-                status = fail("unexpected child status: %s", status);
+                status = fail("unexpected child status: %d", status);
     }
 
 cleanup:
