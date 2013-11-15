@@ -527,6 +527,11 @@ int main(int argc, char *argv[])
             if (WIFEXITED(status))
                 /* propagate the exit status of the child */
                 status = WEXITSTATUS(status);
+            else if WIFSIGNALED(status) {
+                const int signum = WTERMSIG(status);
+                fail("child %d terminated by signal %d", tool_pid, signum);
+                status = 0x80 + signum;
+            }
             else
                 status = fail("unexpected child status: %d", status);
     }
