@@ -207,9 +207,9 @@ static char* find_tool_in_path(const char *base_name)
         if (self)
             /* remove self from $PATH */
             memmove(path, next, strlen(next));
-
-        /* move the cursor */
-        path = next;
+        else
+            /* move the cursor */
+            path = next;
     }
 }
 
