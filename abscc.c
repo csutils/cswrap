@@ -151,23 +151,24 @@ static char* find_exe_in_dir(const char *base_name, const char *dir, bool *self)
 
     /* canonicalize the resulting path */
     char *exec_path = realpath(raw_path, NULL);
-    free(raw_path);
-    if (!exec_path)
-        return NULL;
+    if (exec_path) {
+        /* check whether the file exists and we can execute it */
+        if (-1 == access(exec_path, X_OK))
+            goto fail;
 
-    /* check whether the file exists and we can execute it */
-    if (-1 == access(exec_path, X_OK))
-        goto fail;
+        if (!strcmp(prog_name, basename(exec_path))) {
+            /* do not execute self in order not to end up in an infinite loop */
+            *self = true;
+            goto fail;
+        }
 
-    if (!!strcmp(prog_name, basename(exec_path)))
-        /* found! */
-        return exec_path;
-
-    /* avoid executing self so that we do not end up in an infinite loop */
-    *self = true;
+        free(exec_path);
+        return raw_path;
+    }
 
 fail:
     free(exec_path);
+    free(raw_path);
     return NULL;
 }
 
