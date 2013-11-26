@@ -110,7 +110,7 @@ install -m0755 -d \\
 
 install -m0755 %{name} "\$RPM_BUILD_ROOT%{_bindir}"
 
-for i in c++ cc g++ gcc clang clang++ \\
+for i in c++ cc g++ gcc clang clang++ cppcheck \\
     %{_arch}-redhat-linux-c++ \\
     %{_arch}-redhat-linux-g++ \\
     %{_arch}-redhat-linux-gcc
