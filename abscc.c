@@ -319,12 +319,20 @@ bool translate_args(char ***pargv, const char *base_name)
         && handle_cvar(pargv, FO_ADD, add_env);
 }
 
-/* return true if any of the command-line args is equal to "conftest.c" */
+/* return true if cmd-line args suggest we are called by a configure script */
 bool find_conftest_in_args(char **argv)
 {
-    for (; *argv; ++argv)
-        if (!strcmp(*argv, "conftest.c"))
+    for (; *argv; ++argv) {
+        const char *arg = *argv;
+
+        /* used by autoconf */
+        if (!strcmp(arg, "conftest.c"))
             return true;
+
+        /* used by waf */
+        if (!strcmp(arg, "../test.c"))
+            return true;
+    }
 
     return false;
 }
