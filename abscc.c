@@ -590,7 +590,8 @@ int main(int argc, char *argv[])
                 status = WEXITSTATUS(status);
             else if WIFSIGNALED(status) {
                 const int signum = WTERMSIG(status);
-                fail("child %d terminated by signal %d", tool_pid, signum);
+                fail("child %d (%s) terminated by signal %d", tool_pid,
+                        exec_path, signum);
                 status = 0x80 + signum;
             }
             else
