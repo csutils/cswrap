@@ -36,7 +36,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-char prog_name[] = "abscc";
+static const char prog_name[] = "abscc";
 
 /* print error and return EXIT_FAILURE */
 static int fail(const char *fmt, ...)
@@ -457,18 +457,47 @@ void trans_paths_to_abs(const char *exclude)
     release_cap_file();
 }
 
-static pid_t tool_pid;
+static volatile pid_t tool_pid;
 
-void timeout_handler(int signum)
+void signal_handler(int signum)
 {
-    (void) signum;
     if (!tool_pid)
         return;
 
+    if (SIGALRM == signum)
+        /* timed out */
+        signum = SIGTERM;
+
     /* time elapsed, kill the tool now! */
     const int saved_errno = errno;
-    kill(tool_pid, SIGKILL);
+    kill(tool_pid, signum);
     errno = saved_errno;
+}
+
+static const struct sigaction sa = {
+    .sa_handler = signal_handler
+};
+
+/* FIXME: copy/pasted from cppcheck-gcc */
+bool install_signal_forwarder(void)
+{
+    static int forwarded_signals[] = {
+        SIGINT,
+        SIGQUIT,
+        SIGTERM
+    };
+
+    static int forwarded_signals_cnt =
+        sizeof(forwarded_signals)/
+        sizeof(forwarded_signals[0]);
+
+    /* install the handler for all forwarded signals */
+    int i;
+    for (i = 0; i < forwarded_signals_cnt; ++i)
+        if (0 != sigaction(forwarded_signals[i], &sa, NULL))
+            return false;
+
+    return true;
 }
 
 int /* status */ install_timeout_handler(void)
@@ -488,9 +517,6 @@ int /* status */ install_timeout_handler(void)
         return fail("the value of $ABSCC_TIMEOUT is out of range");
 
     /* install SIGALRM handler */
-    static const struct sigaction sa = {
-        .sa_handler = timeout_handler
-    };
     if (0 != sigaction(SIGALRM, &sa, NULL))
         return fail("unable to install timeout handler");
 
@@ -503,6 +529,9 @@ int main(int argc, char *argv[])
 {
     if (argc < 1)
         return fail("argc < 1");
+
+    if (!install_signal_forwarder())
+        return fail("unable to install signal forwarder");
 
     /* clone argv[] */
     argv = clone_argv(argc, argv);
