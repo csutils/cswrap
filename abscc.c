@@ -309,6 +309,10 @@ bool handle_cvar(char ***pargv, const enum flag_op op, const char *env_var_name)
 
 bool translate_args(char ***pargv, const char *base_name)
 {
+    if (!strcmp(base_name, "cppcheck"))
+        /* do not translate args for cppcheck */
+        return true;
+
     /* branch by C/C++ based on base_name */
     const bool is_c = !strstr(base_name, "++");
     const char *del_env = (is_c) ? "ABSCC_DEL_CFLAGS" : "ABSCC_DEL_CXXFLAGS";
