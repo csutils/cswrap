@@ -1,20 +1,20 @@
 /*
  * Copyright (C) 2013 Red Hat, Inc.
  *
- * This file is part of abscc.
+ * This file is part of cswrap.
  *
- * abscc is free software: you can redistribute it and/or modify
+ * cswrap is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * any later version.
  *
- * abscc is distributed in the hope that it will be useful,
+ * cswrap is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with abscc.  If not, see <http://www.gnu.org/licenses/>.
+ * along with cswrap.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #define _GNU_SOURCE 
@@ -36,7 +36,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static const char prog_name[] = "abscc";
+static const char prog_name[] = "cswrap";
 
 /* print error and return EXIT_FAILURE */
 static int fail(const char *fmt, ...)
@@ -56,11 +56,11 @@ static FILE *cap_file;
 const char *cap_file_name;
 
 sem_t *cap_file_lock;
-static const char cap_file_lock_name[] = "/abscc_cap_file_lock";
+static const char cap_file_lock_name[] = "/cswrap_cap_file_lock";
 
 void init_cap_file_name(void)
 {
-    char *name = getenv("ABSCC_CAP_FILE");
+    char *name = getenv("CSWRAP_CAP_FILE");
     if (name && name[0])
         cap_file_name = name;
 }
@@ -315,8 +315,8 @@ bool translate_args(char ***pargv, const char *base_name)
 
     /* branch by C/C++ based on base_name */
     const bool is_c = !strstr(base_name, "++");
-    const char *del_env = (is_c) ? "ABSCC_DEL_CFLAGS" : "ABSCC_DEL_CXXFLAGS";
-    const char *add_env = (is_c) ? "ABSCC_ADD_CFLAGS" : "ABSCC_ADD_CXXFLAGS";
+    const char *del_env = (is_c) ? "CSWRAP_DEL_CFLAGS" : "CSWRAP_DEL_CXXFLAGS";
+    const char *add_env = (is_c) ? "CSWRAP_ADD_CFLAGS" : "CSWRAP_ADD_CXXFLAGS";
 
     /* del/add flags as requested */
     return handle_cvar(pargv, FO_DEL, del_env)
@@ -506,7 +506,7 @@ bool install_signal_forwarder(void)
 
 int /* status */ install_timeout_handler(void)
 {
-    const char *str_time = getenv("ABSCC_TIMEOUT");
+    const char *str_time = getenv("CSWRAP_TIMEOUT");
     if (!str_time || !str_time[0])
         /* no timeout requested */
         return EXIT_SUCCESS;
@@ -515,10 +515,10 @@ int /* status */ install_timeout_handler(void)
     long time;
     char c;
     if (1 != sscanf(str_time, "%li%c", &time, &c))
-        return fail("unable to parse the value of $ABSCC_TIMEOUT");
+        return fail("unable to parse the value of $CSWRAP_TIMEOUT");
 
     if (UINT_MAX < time || time <= 0L)
-        return fail("the value of $ABSCC_TIMEOUT is out of range");
+        return fail("the value of $CSWRAP_TIMEOUT is out of range");
 
     /* install SIGALRM handler */
     if (0 != sigaction(SIGALRM, &sa, NULL))
@@ -561,7 +561,7 @@ int main(int argc, char *argv[])
         return fail("execv() failed: %s", strerror(errno));
     }
 
-    /* add/del C{,XX}FLAGS per $ABSCC_C{,XX}FLAGS_{ADD,DEL} */
+    /* add/del C{,XX}FLAGS per $CSWRAP_C{,XX}FLAGS_{ADD,DEL} */
     if (!translate_args(&argv, base_name)) {
         free(base_name);
         return fail("insufficient memory to append a flag");

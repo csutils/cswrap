@@ -2,24 +2,24 @@
 
 # Copyright (C) 2013 Red Hat, Inc.
 #
-# This file is part of abscc.
+# This file is part of cswrap.
 #
-# abscc is free software: you can redistribute it and/or modify
+# cswrap is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # any later version.
 #
-# abscc is distributed in the hope that it will be useful,
+# cswrap is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with abscc.  If not, see <http://www.gnu.org/licenses/>.
+# along with cswrap.  If not, see <http://www.gnu.org/licenses/>.
 
 SELF="$0"
 
-PKG="abscc"
+PKG="cswrap"
 
 die(){
     echo "$SELF: error: $1" >&2
@@ -65,10 +65,12 @@ Summary:    GCC wrapper canonicalizing file names in warning messages
 Group:      Development/Tools
 License:    GPLv3+
 URL:        https://engineering.redhat.com/trac/CoverityScan
-Source0:    http://git.engineering.redhat.com/?p=users/kdudka/coverity-scan.git;a=blob_plain;f=abscc/abscc.c
-Source1:    http://git.engineering.redhat.com/?p=users/kdudka/coverity-scan.git;a=blob_plain;f=abscc/Makefile
+Source0:    http://git.engineering.redhat.com/?p=users/kdudka/coverity-scan.git;a=blob_plain;f=cswrap/cswrap.c
+Source1:    http://git.engineering.redhat.com/?p=users/kdudka/coverity-scan.git;a=blob_plain;f=cswrap/Makefile
 
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+Obsoletes:  abscc
 
 %if (0%{?fedora} >= 12 || 0%{?rhel} >= 6)
 BuildRequires: glibc-static
@@ -91,7 +93,7 @@ make %{?_smp_mflags} \
 
 %check
 cd %{name}-%{version}
-PATH=\$RPM_BUILD_ROOT%{_libdir}/abscc:\$PATH
+PATH=\$RPM_BUILD_ROOT%{_libdir}/cswrap:\$PATH
 export PATH
 make clean
 make %{?_smp_mflags} CFLAGS="-ansi -pedantic" 2>&1 | grep "\$PWD" > /dev/null
@@ -106,7 +108,7 @@ rm -rf "\$RPM_BUILD_ROOT"
 install -m0755 -d \\
     "\$RPM_BUILD_ROOT%{_bindir}"                \\
     "\$RPM_BUILD_ROOT%{_libdir}"                \\
-    "\$RPM_BUILD_ROOT%{_libdir}/abscc"
+    "\$RPM_BUILD_ROOT%{_libdir}/cswrap"
 
 install -m0755 %{name} "\$RPM_BUILD_ROOT%{_bindir}"
 
@@ -115,7 +117,7 @@ for i in c++ cc g++ gcc clang clang++ cppcheck \\
     %{_arch}-redhat-linux-g++ \\
     %{_arch}-redhat-linux-gcc
 do
-    ln -s ../../bin/abscc "\$RPM_BUILD_ROOT%{_libdir}/abscc/\$i"
+    ln -s ../../bin/cswrap "\$RPM_BUILD_ROOT%{_libdir}/cswrap/\$i"
 done
 
 # force generating the %{name}-debuginfo package
@@ -123,8 +125,8 @@ done
 
 %files
 %defattr(-,root,root,-)
-%{_bindir}/abscc
-%{_libdir}/abscc
+%{_bindir}/cswrap
+%{_libdir}/cswrap
 EOF
 
 rpmbuild -bs "$SPEC"                            \

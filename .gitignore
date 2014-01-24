@@ -1,2 +1,3 @@
-/abscc
-/abscc.o
+/cswrap
+/cswrap.o
+/cswrap-*.src.rpm

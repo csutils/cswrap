@@ -1,5 +1,5 @@
 CFLAGS ?= -std=gnu99 -Wall -Wextra -pedantic -O2 -g
 LDFLAGS ?= -lrt
-abscc: abscc.o
+cswrap: cswrap.o
 clean:
-	rm -f abscc abscc.o
+	rm -f cswrap cswrap.o
