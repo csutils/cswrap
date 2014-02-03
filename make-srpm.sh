@@ -1,6 +1,6 @@
 #/bin/bash
 
-# Copyright (C) 2013 Red Hat, Inc.
+# Copyright (C) 2013-2014 Red Hat, Inc.
 #
 # This file is part of cswrap.
 #
@@ -50,7 +50,6 @@ VER="0.`git log --pretty="%cd_%h" --date=short -1 . | tr -d -`" \
     || die "git log failed"
 
 NV="${PKG}-$VER"
-SRC="${PKG}.tar.xz"
 
 TMP="`mktemp -d`"
 trap "echo --- $SELF: removing $TMP... 2>&1; rm -rf '$TMP'" EXIT
@@ -60,13 +59,14 @@ cat > "$SPEC" << EOF
 Name:       $PKG
 Version:    $VER
 Release:    1%{?dist}
-Summary:    GCC wrapper canonicalizing file names in warning messages
+Summary:    Generic compiler wrapper
 
 Group:      Development/Tools
 License:    GPLv3+
-URL:        https://engineering.redhat.com/trac/CoverityScan
-Source0:    http://git.engineering.redhat.com/?p=users/kdudka/coverity-scan.git;a=blob_plain;f=cswrap/cswrap.c
-Source1:    http://git.engineering.redhat.com/?p=users/kdudka/coverity-scan.git;a=blob_plain;f=cswrap/Makefile
+URL:        http://git.fedorahosted.org/cgit/cswrap.git
+Source0:    http://git.fedorahosted.org/cgit/cswrap.git/plain/cswrap.c
+Source1:    http://git.fedorahosted.org/cgit/cswrap.git/plain/COPYING
+Source2:    http://git.fedorahosted.org/cgit/cswrap.git/plain/Makefile
 
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -77,13 +77,13 @@ BuildRequires: glibc-static
 %endif
 
 %description
-Experimentally used by cov-mockbuild, not yet fully documented.
+Generic compiler wrapper used by csmock to capture diagnostic messages.
 
 %prep
 rm -rf %{name}-%{version}
 install -m0755 -d %{name}-%{version}
 cd %{name}-%{version}
-install -m0644 %{SOURCE0} %{SOURCE1} .
+install -m0644 %{SOURCE0} %{SOURCE1} %{SOURCE2} .
 
 %build
 cd %{name}-%{version}
@@ -127,6 +127,7 @@ done
 %defattr(-,root,root,-)
 %{_bindir}/cswrap
 %{_libdir}/cswrap
+%doc %{name}-%{version}/COPYING
 EOF
 
 rpmbuild -bs "$SPEC"                            \
