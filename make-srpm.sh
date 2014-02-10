@@ -54,6 +54,13 @@ NV="${PKG}-$VER"
 TMP="`mktemp -d`"
 trap "echo --- $SELF: removing $TMP... 2>&1; rm -rf '$TMP'" EXIT
 test -d "$TMP" || die "mktemp failed"
+
+SRC_TAR="${PKG}.tar"
+SRC="${SRC_TAR}.xz"
+git archive --prefix="$NV/" --format="tar" HEAD -- . > "${TMP}/${SRC_TAR}"
+cd "$TMP" >/dev/null                    || die "mktemp failed"
+xz -c "$SRC_TAR" > "$SRC"               || die "failed to compress sources"
+
 SPEC="$TMP/$PKG.spec"
 cat > "$SPEC" << EOF
 Name:       $PKG
@@ -63,11 +70,8 @@ Summary:    Generic compiler wrapper
 
 Group:      Development/Tools
 License:    GPLv3+
-URL:        http://git.fedorahosted.org/cgit/cswrap.git
-Source0:    http://git.fedorahosted.org/cgit/cswrap.git/plain/cswrap.c
-Source1:    http://git.fedorahosted.org/cgit/cswrap.git/plain/COPYING
-Source2:    http://git.fedorahosted.org/cgit/cswrap.git/plain/Makefile
-
+URL:        https://git.fedorahosted.org/cgit/cswrap.git
+Source0:    https://git.fedorahosted.org/cgit/cswrap.git/snapshot/$SRC
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Obsoletes:  abscc
@@ -80,19 +84,14 @@ BuildRequires: glibc-static
 Generic compiler wrapper used by csmock to capture diagnostic messages.
 
 %prep
-rm -rf %{name}-%{version}
-install -m0755 -d %{name}-%{version}
-cd %{name}-%{version}
-install -m0644 %{SOURCE0} %{SOURCE1} %{SOURCE2} .
+%setup -q
 
 %build
-cd %{name}-%{version}
 make %{?_smp_mflags} \
     CFLAGS="\$RPM_OPT_FLAGS" \
     LDFLAGS="\$RPM_OPT_FLAGS -static -pthread"
 
 %check
-cd %{name}-%{version}
 PATH=\$RPM_BUILD_ROOT%{_libdir}/cswrap:\$PATH
 export PATH
 make clean
@@ -102,7 +101,6 @@ make %{?_smp_mflags} CFLAGS="-ansi -pedantic" 2>&1 | grep "\$PWD" > /dev/null
 rm -rf "\$RPM_BUILD_ROOT"
 
 %install
-cd %{name}-%{version}
 rm -rf "\$RPM_BUILD_ROOT"
 
 install -m0755 -d \\
@@ -120,19 +118,16 @@ do
     ln -s ../../bin/cswrap "\$RPM_BUILD_ROOT%{_libdir}/cswrap/\$i"
 done
 
-# force generating the %{name}-debuginfo package
-%{debug_package}
-
 %files
 %defattr(-,root,root,-)
 %{_bindir}/cswrap
 %{_libdir}/cswrap
-%doc %{name}-%{version}/COPYING
+%doc COPYING
 EOF
 
 rpmbuild -bs "$SPEC"                            \
-    --define "_sourcedir ."                     \
-    --define "_specdir ."                       \
+    --define "_sourcedir $TMP"                  \
+    --define "_specdir $TMP"                    \
     --define "_srcrpmdir $DST"                  \
     --define "_source_filedigest_algorithm md5" \
     --define "_binary_filedigest_algorithm md5"
