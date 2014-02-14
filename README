@@ -1,0 +1,15 @@
+cswrap
+======
+cswrap is a generic compiler wrapper that translates relative paths to absolute
+paths in diagnostic messages.  Create a symbolic link to cswrap named as your
+compiler (gcc, g++, ...) and put it to your $PATH.  cswrap --help prints usage
+to standard error output.  You can find the up2date sources in the following
+repository:
+
+    http://git.fedorahosted.org/cgit/cswrap.git
+
+Please report bugs and feature requests to the following mailing-list:
+
+    https://fedorahosted.org/mailman/listinfo/cswrap-devel
+
+cswrap is licensed under GPLv3+, see COPYING for details.
