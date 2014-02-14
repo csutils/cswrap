@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Red Hat, Inc.
+ * Copyright (C) 2013-2014 Red Hat, Inc.
  *
  * This file is part of cswrap.
  *
@@ -36,6 +36,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#define STREQ(a, b) (!strcmp(a, b))
+
 static const char prog_name[] = "cswrap";
 
 /* print error and return EXIT_FAILURE */
@@ -49,6 +51,25 @@ static int fail(const char *fmt, ...)
     fputc('\n', stderr);
 
     va_end(ap);
+    return EXIT_FAILURE;
+}
+
+static int usage(char *argv[])
+{
+    /* TODO: document environment variables that cswrap is perceptive to */
+    fprintf(stderr, "Usage:\n\
+    %s is a generic compiler wrapper that translates relative paths to\n\
+    absolute paths in diagnostic messages.  Create a symbolic link to %s\n\
+    named as your compiler (gcc, g++, ...) and put it to your $PATH.\n\
+    %s --help prints this text to standard error output.\n",
+    prog_name, prog_name, prog_name);
+
+    for (; *argv; ++argv)
+        if (STREQ("--help", *argv))
+            /* if the user really asks for --help, we have succeeded */
+            return EXIT_SUCCESS;
+
+    /* wrapper called directly, no argument matched */
     return EXIT_FAILURE;
 }
 
@@ -534,6 +555,16 @@ int main(int argc, char *argv[])
     if (argc < 1)
         return fail("argc < 1");
 
+    /* obtain base name of the executable being run */
+    char *base_name = strdup(basename(argv[0]));
+    if (STREQ(base_name, prog_name))
+        return usage(argv);
+
+    /* duplicate the string as basename() return value is not valid forever */
+    base_name = strdup(base_name);
+    if (!base_name)
+        return fail("strdup() failed");
+
     if (!install_signal_forwarder())
         return fail("unable to install signal forwarder");
 
@@ -541,11 +572,6 @@ int main(int argc, char *argv[])
     argv = clone_argv(argc, argv);
     if (!argv)
         return fail("insufficient memory to clone argv[]");
-
-    /* obtain base name of the executable being run */
-    char *base_name = strdup(basename(argv[0]));
-    if (!base_name)
-        return fail("basename() failed");
 
     /* find the requested tool in $PATH */
     char *exec_path = find_tool_in_path(base_name);
