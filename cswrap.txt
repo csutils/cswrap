@@ -1,0 +1,86 @@
+cswrap(1)
+=========
+:doctype: manpage
+
+NAME
+----
+cswrap - generic compiler wrapper
+
+
+SYNOPSIS
+--------
+*cswrap* ['--help']
+
+
+DESCRIPTION
+-----------
+cswrap is a generic compiler wrapper that translates relative paths to absolute
+paths in diagnostic messages.  Create a symbolic link to cswrap named as your
+compiler (gcc, g++, ...) and put it to your $PATH.
+
+Translated diagnostic messages are decorated by suffix *\<--[TOOL]* if they
+are produced by a tool named *TOOL* (given by cswrap invokation via symlink
+named *TOOL*).  This only applies to translated diagnostic messages, which
+does not include code snippets, for instance.
+
+
+OPTIONS
+-------
+*--help*::
+    Prints basic usage information.
+
+
+EXIT STATUS
+-----------
+cswrap propagates the exit status returned by the compiler (in case cswrap
+succeeds to run the compiler).
+
+
+ENVIRONMENT VARIABLES
+---------------------
+*CSWRAP_CAP_FILE*::
+    If set to a non-empty string, cswrap captures diagnostic messages into a
+    file named *$CSWRAP_CAP_FILE*.  In this case, the capture file is
+    protected by a lock named */cswrap_cap_file_lock* in order to obtain
+    consistent output when running multiple compiler processes in parallel.
+
+*CSWRAP_TIMEOUT*::
+    If set to a positive integer, cswrap installs a timeout for the compiler
+    being wrapped.  If the specified amount of time (given in seconds) elapses
+    the compiler process is signalled by SIGTERM.  Note the cswrap process
+    waits till the compiler process finishes in any case.
+
+*CSWRAP_DEL_CFLAGS*, *CSWRAP_DEL_CXXFLAGS*::
+    cswrap expects a colon-separated list of compiler flags that should be
+    removed from command line prior to invoking the compiler.  The parameters
+    are matched for exact match and they are case-sensitive.  If a compiler
+    flag appears in the command line multiple times, all its occurrences are
+    removed.  *$CSWRAP_DEL_CFLAGS* applies to compilation of C sources only.
+    *$CSWRAP_DEL_CXXFLAGS* applies to compilation of C++ sources only.
+
+*CSWRAP_ADD_CFLAGS*, *CSWRAP_ADD_CXXFLAGS*::
+    cswrap expects a colon-separated list of compiler flags that should be
+    appended to command line prior to invoking the compiler.  The flags are
+    appended even if they already appear in the command line and they are
+    always appended on the end of the command line.  *$CSWRAP_ADD_CFLAGS*
+    applies to compilation of C sources only.  *$CSWRAP_ADD_CXXFLAGS* applies
+    to compilation of C++ sources only.
+
+
+BUGS
+----
+Please report bugs and feature requests to the following mailing-list:
+
+    https://fedorahosted.org/mailman/listinfo/cswrap-devel
+
+
+AUTHOR
+------
+Written by Kamil Dudka.
+
+
+COPYING
+-------
+Copyright \(C) 2013-2014 Red Hat, Inc. Free use of this software is granted
+under the terms of the GNU General Public License (GPL).  See the COPYING file
+for details.

@@ -79,6 +79,8 @@ BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Obsoletes:  abscc
 
+BuildRequires: asciidoc
+
 # csmock copies the resulting cswrap binary into mock chroot, which may contain
 # an older (e.g. RHEL-5) version of glibc, and it would not dynamically link
 # against the old version of glibc if it was built against a newer one.
@@ -113,9 +115,11 @@ rm -rf "\$RPM_BUILD_ROOT"
 install -m0755 -d \\
     "\$RPM_BUILD_ROOT%{_bindir}"                \\
     "\$RPM_BUILD_ROOT%{_libdir}"                \\
-    "\$RPM_BUILD_ROOT%{_libdir}/cswrap"
+    "\$RPM_BUILD_ROOT%{_libdir}/cswrap"         \\
+    "\$RPM_BUILD_ROOT%{_mandir}/man1"
 
-install -m0755 %{name} "\$RPM_BUILD_ROOT%{_bindir}"
+install -p -m0755 %{name} "\$RPM_BUILD_ROOT%{_bindir}"
+install -p -m0644 %{name}.1 "\$RPM_BUILD_ROOT%{_mandir}/man1"
 
 for i in c++ cc g++ gcc clang clang++ cppcheck \\
     %{_arch}-redhat-linux-c++ \\
@@ -129,6 +133,7 @@ done
 %defattr(-,root,root,-)
 %{_bindir}/cswrap
 %{_libdir}/cswrap
+%{_mandir}/man1/%{name}.1*
 %doc COPYING README
 EOF
 
