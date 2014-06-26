@@ -48,7 +48,7 @@ VER="`echo "$VER" | sed "s/-.*-/.$TIMESTAMP./"`"
 BRANCH="`git rev-parse --abbrev-ref HEAD`"
 test -n "$BRANCH" || die "failed to get current branch name"
 test master = "${BRANCH}" || VER="${VER}.${BRANCH}"
-test -z "`git diff head`" || VER="${VER}.dirty"
+test -z "`git diff HEAD`" || VER="${VER}.dirty"
 
 NV="${PKG}-${VER}"
 printf "%s: preparing a release of \033[1;32m%s\033[0m\n" "$SELF" "$NV"

@@ -483,15 +483,18 @@ void trans_paths_to_abs(const char *exclude)
 }
 
 static volatile pid_t tool_pid;
+static volatile sig_atomic_t timed_out;
 
 void signal_handler(int signum)
 {
     if (!tool_pid)
         return;
 
-    if (SIGALRM == signum)
+    if (SIGALRM == signum) {
         /* timed out */
         signum = SIGTERM;
+        timed_out = 1;
+    }
 
     /* time elapsed, kill the tool now! */
     const int saved_errno = errno;
@@ -649,8 +652,11 @@ int main(int argc, char *argv[])
                 status = WEXITSTATUS(status);
             else if WIFSIGNALED(status) {
                 const int signum = WTERMSIG(status);
-                fail("child %d (%s) terminated by signal %d", tool_pid,
-                        exec_path, signum);
+                const char *msg = "";
+                if (timed_out)
+                    msg = " (timed out)";
+                fail("child %d (%s) terminated by signal %d%s", tool_pid,
+                        exec_path, signum, msg);
                 status = 0x80 + signum;
             }
             else
