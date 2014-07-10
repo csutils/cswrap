@@ -96,8 +96,8 @@ Generic compiler wrapper used by csmock to capture diagnostic messages.
 %setup -q
 
 %build
-make %{?_smp_mflags}                            \\
-    CFLAGS="\$RPM_OPT_FLAGS"                    \\
+make %{?_smp_mflags} \\
+    CFLAGS="\$RPM_OPT_FLAGS -DPATH_TO_WRAP='\\"%{_libdir}/cswrap\\"'" \\
     LDFLAGS="\$RPM_OPT_FLAGS -static -pthread"
 
 %check

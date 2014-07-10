@@ -38,6 +38,12 @@
 
 #define STREQ(a, b) (!strcmp(a, b))
 
+#ifdef PATH_TO_WRAP
+const char *path_to_wrap = PATH_TO_WRAP;
+#else
+const char *path_to_wrap = "";
+#endif
+
 static const char prog_name[] = "cswrap";
 
 /* print error and return EXIT_FAILURE */
@@ -58,11 +64,12 @@ static int usage(char *argv[])
 {
     /* TODO: document environment variables that cswrap is perceptive to */
     fprintf(stderr, "Usage:\n\
+    export PATH=\"`%s --print-path-to-wrap`:$PATH\"\n\n\
     %s is a generic compiler wrapper that translates relative paths to\n\
     absolute paths in diagnostic messages.  Create a symbolic link to %s\n\
     named as your compiler (gcc, g++, ...) and put it to your $PATH.\n\
     %s --help prints this text to standard error output.\n",
-    prog_name, prog_name, prog_name);
+    prog_name, prog_name, prog_name, prog_name);
 
     for (; *argv; ++argv)
         if (STREQ("--help", *argv))
@@ -71,6 +78,16 @@ static int usage(char *argv[])
 
     /* wrapper called directly, no argument matched */
     return EXIT_FAILURE;
+}
+
+static int handle_args(const int argc, char *argv[])
+{
+    if (argc == 2 && STREQ("--print-path-to-wrap", argv[1])) {
+        printf("%s\n", path_to_wrap);
+        return EXIT_SUCCESS;
+    }
+
+    return usage(argv);
 }
 
 static FILE *cap_file;
@@ -561,7 +578,7 @@ int main(int argc, char *argv[])
     /* obtain base name of the executable being run */
     char *base_name = strdup(basename(argv[0]));
     if (STREQ(base_name, prog_name))
-        return usage(argv);
+        return handle_args(argc, argv);
 
     /* duplicate the string as basename() return value is not valid forever */
     base_name = strdup(base_name);
