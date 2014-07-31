@@ -545,10 +545,35 @@ bool install_signal_forwarder(void)
     return true;
 }
 
-int /* status */ install_timeout_handler(void)
+bool timeout_disabled_for(const char *base_name)
+{
+    const char *str_list = getenv("CSWRAP_TIMEOUT_FOR");
+    if (!str_list || !str_list[0])
+        /* CSWRAP_TIMEOUT_FOR is unset or empty */
+        return false;
+
+    const size_t len = strlen(base_name);
+
+    /* go through colon-separated list of programs in $CSWRAP_TIMEOUT_FOR */
+    const char *prog = str_list;
+    for (;;) {
+        const char *term = strchr(prog, ':');
+        if (!term)
+            /* compare the last item in the list */
+            return !!strcmp(prog, base_name);
+
+        if ((prog + len == term) && !strncmp(prog, base_name, len))
+            /* timeout explicitly enabled for base_name */
+            return false;
+
+        prog = term + 1;
+    }
+}
+
+int /* status */ install_timeout_handler(const char *base_name)
 {
     const char *str_time = getenv("CSWRAP_TIMEOUT");
-    if (!str_time || !str_time[0])
+    if (!str_time || !str_time[0] || timeout_disabled_for(base_name))
         /* no timeout requested */
         return EXIT_SUCCESS;
 
@@ -647,7 +672,7 @@ int main(int argc, char *argv[])
                 break;
             }
 
-            status = install_timeout_handler();
+            status = install_timeout_handler(base_name);
             if (EXIT_SUCCESS != status)
                 break;
 

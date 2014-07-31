@@ -59,6 +59,11 @@ ENVIRONMENT VARIABLES
     the compiler process is signalled by SIGTERM.  Note the cswrap process
     waits till the compiler process finishes in any case.
 
+*CSWRAP_TIMEOUT_FOR*::
+    Colon-separated list of programs (compilers) that *$CSWRAP_TIMEOUT* should
+    be applied to.  If *$CSWRAP_TIMEOUT_FOR* is unset or empty,
+    *$CSWRAP_TIMEOUT* applies to all programs.
+
 *CSWRAP_DEL_CFLAGS*, *CSWRAP_DEL_CXXFLAGS*::
     cswrap expects a colon-separated list of compiler flags that should be
     removed from command line prior to invoking the compiler.  The parameters
