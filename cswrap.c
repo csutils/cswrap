@@ -601,7 +601,7 @@ int main(int argc, char *argv[])
         return fail("argc < 1");
 
     /* obtain base name of the executable being run */
-    char *base_name = strdup(basename(argv[0]));
+    char *base_name = basename(argv[0]);
     if (STREQ(base_name, prog_name))
         return handle_args(argc, argv);
 
