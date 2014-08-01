@@ -633,11 +633,6 @@ int main(int argc, char *argv[])
     if (!install_signal_forwarder())
         return fail("unable to install signal forwarder");
 
-    /* clone argv[] */
-    argv = clone_argv(argc, argv);
-    if (!argv)
-        return fail("insufficient memory to clone argv[]");
-
     /* find the requested tool in $PATH */
     char *exec_path = find_tool_in_path(base_name);
     if (!exec_path) {
@@ -652,8 +647,13 @@ int main(int argc, char *argv[])
         return fail("execv() failed: %s", strerror(errno));
     }
 
+    /* clone argv[] */
+    char **argv_dup = clone_argv(argc, argv);
+    if (!argv_dup)
+        return fail("insufficient memory to clone argv[]");
+
     /* add/del C{,XX}FLAGS per $CSWRAP_C{,XX}FLAGS_{ADD,DEL} */
-    if (!translate_args(&argv, base_name)) {
+    if (!translate_args(&argv_dup, base_name)) {
         free(base_name);
         return fail("insufficient memory to append a flag");
     }
@@ -680,7 +680,7 @@ int main(int argc, char *argv[])
                 status = fail("unable to redirect stderr: %s", strerror(errno));
                 break;
             }
-            execv(exec_path, argv);
+            execv(exec_path, argv_dup);
             status = fail("execv() failed: %s", strerror(errno));
             break;
 
