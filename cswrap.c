@@ -194,7 +194,7 @@ static char* find_exe_in_dir(const char *base_name, const char *dir, bool *self)
         if (-1 == access(exec_path, X_OK))
             goto fail;
 
-        if (!strcmp(prog_name, basename(exec_path))) {
+        if (STREQ(prog_name, basename(exec_path))) {
             /* do not execute self in order not to end up in an infinite loop */
             *self = true;
             goto fail;
@@ -281,7 +281,7 @@ bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
     int argc = 0;
     char **argv = *pargv;
     while (*argv) {
-        if (FO_DEL == op && !strcmp(*argv, flag))
+        if (FO_DEL == op && STREQ(*argv, flag))
             del_arg(argv);
         else {
             ++argc;
@@ -347,7 +347,7 @@ bool handle_cvar(char ***pargv, const enum flag_op op, const char *env_var_name)
 
 bool translate_args(char ***pargv, const char *base_name)
 {
-    if (!strcmp(base_name, "cppcheck"))
+    if (STREQ(base_name, "cppcheck"))
         /* do not translate args for cppcheck */
         return true;
 
@@ -368,11 +368,11 @@ bool find_conftest_in_args(char **argv)
         const char *arg = *argv;
 
         /* used by autoconf */
-        if (!strcmp(arg, "conftest.c"))
+        if (STREQ(arg, "conftest.c"))
             return true;
 
         /* used by waf */
-        if (!strcmp(arg, "../test.c"))
+        if (STREQ(arg, "../test.c"))
             return true;
     }
 
@@ -443,7 +443,7 @@ bool handle_line(char *buf, const char *exclude)
     /* temporarily replace the colon by zero */
     *colon = '\0';
 
-    if (!strcmp(buf, exclude)) {
+    if (STREQ(buf, exclude)) {
         /* explicitly excluded, skip this! */
         *colon = ':';
         return false;
@@ -560,7 +560,7 @@ bool timeout_disabled_for(const char *base_name)
         const char *term = strchr(prog, ':');
         if (!term)
             /* compare the last item in the list */
-            return !!strcmp(prog, base_name);
+            return !STREQ(prog, base_name);
 
         if ((prog + len == term) && !strncmp(prog, base_name, len))
             /* timeout explicitly enabled for base_name */

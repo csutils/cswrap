@@ -101,7 +101,7 @@ make %{?_smp_mflags} \\
     LDFLAGS="\$RPM_OPT_FLAGS -static -pthread"
 
 %check
-PATH=\$RPM_BUILD_ROOT%{_libdir}/cswrap:\$PATH
+PATH="\$RPM_BUILD_ROOT%{_libdir}/cswrap:\$PATH"
 export PATH
 make clean
 make %{?_smp_mflags} CFLAGS="-ansi -pedantic" 2>&1 | grep "\$PWD" > /dev/null
