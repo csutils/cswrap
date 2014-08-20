@@ -75,9 +75,6 @@ Group:      Development/Tools
 License:    GPLv3+
 URL:        https://git.fedorahosted.org/cgit/cswrap.git
 Source0:    https://git.fedorahosted.org/cgit/cswrap.git/snapshot/$SRC
-BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-
-Obsoletes:  abscc
 
 BuildRequires: asciidoc
 
@@ -106,12 +103,7 @@ export PATH
 make clean
 make %{?_smp_mflags} CFLAGS="-ansi -pedantic" 2>&1 | grep "\$PWD" > /dev/null
 
-%clean
-rm -rf "\$RPM_BUILD_ROOT"
-
 %install
-rm -rf "\$RPM_BUILD_ROOT"
-
 install -m0755 -d \\
     "\$RPM_BUILD_ROOT%{_bindir}"                \\
     "\$RPM_BUILD_ROOT%{_libdir}"                \\
@@ -130,7 +122,6 @@ do
 done
 
 %files
-%defattr(-,root,root,-)
 %{_bindir}/cswrap
 %{_libdir}/cswrap
 %{_mandir}/man1/%{name}.1*
@@ -140,6 +131,4 @@ EOF
 rpmbuild -bs "$SPEC"                            \
     --define "_sourcedir $TMP"                  \
     --define "_specdir $TMP"                    \
-    --define "_srcrpmdir $DST"                  \
-    --define "_source_filedigest_algorithm md5" \
-    --define "_binary_filedigest_algorithm md5"
+    --define "_srcrpmdir $DST"
