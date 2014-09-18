@@ -76,7 +76,7 @@ ENVIRONMENT VARIABLES
     cswrap expects a colon-separated list of compiler flags that should be
     appended to command line prior to invoking the compiler.  The flags are
     appended even if they already appear in the command line and they are
-    always appended on the end of the command line.  *$CSWRAP_ADD_CFLAGS*
+    always appended at the end of the command line.  *$CSWRAP_ADD_CFLAGS*
     applies to compilation of C sources only.  *$CSWRAP_ADD_CXXFLAGS* applies
     to compilation of C++ sources only.
 
