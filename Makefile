@@ -1,14 +1,41 @@
-CFLAGS ?= -std=gnu99 -Wall -Wextra -pedantic -O2 -g
-LDFLAGS ?= -pthread
+# Copyright (C) 2014 Red Hat, Inc.
+#
+# This file is part of cswrap.
+#
+# cswrap is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+#
+# cswrap is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with cswrap.  If not, see <http://www.gnu.org/licenses/>.
 
-.PHONY: all clean
+CMAKE ?= cmake
+CTEST ?= ctest
 
-all: cswrap cswrap.1
+.PHONY: all check clean distclean distcheck install
 
-cswrap: cswrap.o
+all:
+	mkdir -p cswrap_build
+	cd cswrap_build && $(CMAKE) ..
+	$(MAKE) -C cswrap_build
 
-cswrap.1: cswrap.txt
-	a2x -f manpage -v $<
+check: all
+	cd cswrap_build && $(CTEST) --output-on-failure
 
 clean:
-	rm -f cswrap cswrap.o cswrap.1 cswrap.xml
+	if test -e cswrap_build/Makefile; then $(MAKE) clean -C cswrap_build; fi
+
+distclean:
+	rm -rf cswrap_build
+
+distcheck: distclean
+	$(MAKE) check
+
+install: all
+	$(MAKE) -C cswrap_build install

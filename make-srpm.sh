@@ -77,6 +77,7 @@ URL:        https://git.fedorahosted.org/cgit/cswrap.git
 Source0:    https://git.fedorahosted.org/cgit/cswrap.git/snapshot/$SRC
 
 BuildRequires: asciidoc
+BuildRequires: cmake
 
 # csmock copies the resulting cswrap binary into mock chroot, which may contain
 # an older (e.g. RHEL-5) version of glibc, and it would not dynamically link
@@ -93,15 +94,16 @@ Generic compiler wrapper used by csmock to capture diagnostic messages.
 %setup -q
 
 %build
-make %{?_smp_mflags} \\
-    CFLAGS="\$RPM_OPT_FLAGS -DPATH_TO_WRAP='\\"%{_libdir}/cswrap\\"'" \\
-    LDFLAGS="\$RPM_OPT_FLAGS -static -pthread"
+mkdir cswrap_build
+cd cswrap_build
+export CFLAGS="\$RPM_OPT_FLAGS"' -DPATH_TO_WRAP=\\"%{_libdir}/cswrap\\"'
+export LDFLAGS="\$RPM_OPT_FLAGS -static -pthread"
+%cmake ..
+make %{?_smp_mflags} VERBOSE=yes
 
 %check
-PATH="\$RPM_BUILD_ROOT%{_libdir}/cswrap:\$PATH"
-export PATH
-make clean
-make %{?_smp_mflags} CFLAGS="-ansi -pedantic" 2>&1 | grep "\$PWD" > /dev/null
+cd cswrap_build
+ctest %{?_smp_mflags} --output-on-failure
 
 %install
 install -m0755 -d \\
@@ -110,8 +112,8 @@ install -m0755 -d \\
     "\$RPM_BUILD_ROOT%{_libdir}/cswrap"         \\
     "\$RPM_BUILD_ROOT%{_mandir}/man1"
 
-install -p -m0755 %{name} "\$RPM_BUILD_ROOT%{_bindir}"
-install -p -m0644 %{name}.1 "\$RPM_BUILD_ROOT%{_mandir}/man1"
+cd cswrap_build
+make install DESTDIR="\$RPM_BUILD_ROOT"
 
 for i in c++ cc g++ gcc clang clang++ cppcheck \\
     %{_arch}-redhat-linux-c++ \\
