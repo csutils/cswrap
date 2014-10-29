@@ -55,7 +55,13 @@ printf "%s: preparing a release of \033[1;32m%s\033[0m\n" "$SELF" "$NV"
 
 TMP="`mktemp -d`"
 trap "echo --- $SELF: removing $TMP... 2>&1; rm -rf '$TMP'" EXIT
-test -d "$TMP" || die "mktemp failed"
+cd "$TMP" >/dev/null || die "mktemp failed"
+
+# clone the repository
+git clone "$REPO" "$PKG"                || die "git clone failed"
+cd "$PKG"                               || die "git clone failed"
+
+make -j9 distcheck CTEST='ctest -j9'    || die "'make distcheck' has failed"
 
 SRC_TAR="${NV}.tar"
 SRC="${SRC_TAR}.xz"
@@ -78,6 +84,10 @@ Source0:    https://git.fedorahosted.org/cgit/cswrap.git/snapshot/$SRC
 
 BuildRequires: asciidoc
 BuildRequires: cmake
+
+%ifarch %{ix86} x86_64
+BuildRequires: valgrind
+%endif
 
 # csmock copies the resulting cswrap binary into mock chroot, which may contain
 # an older (e.g. RHEL-5) version of glibc, and it would not dynamically link
