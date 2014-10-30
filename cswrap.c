@@ -188,7 +188,7 @@ static char* find_exe_in_dir(const char *base_name, const char *dir, bool *self)
         return NULL;
 
     /* canonicalize the resulting path */
-    char *exec_path = realpath(raw_path, NULL);
+    char *exec_path = canonicalize_file_name(raw_path);
     if (exec_path) {
         /* check whether the file exists and we can execute it */
         if (-1 == access(exec_path, X_OK))
@@ -456,7 +456,7 @@ bool handle_line(char *buf, const char *exclude)
     }
 
     /* canonicalize the file name and restore the previously replaced colon */
-    char *abs_path = realpath(buf, NULL);
+    char *abs_path = canonicalize_file_name(buf);
     *colon = ':';
     if (!abs_path)
         return false;
