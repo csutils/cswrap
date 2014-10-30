@@ -27,9 +27,7 @@ mkdir -p bin/{compiler,wrapper}
 export PATH="$PWD/bin/wrapper:$PWD/bin/compiler:$PATH"
 
 # create fake compiler that lists cswrap-input.txt to stderr
-printf "#!/bin/sh\ncat '%s' >&2\n" \
-    "$TEST_DST_DIR/cswrap-input.txt" \
-    > bin/compiler/gcc
+printf "#!/bin/sh\ncat '%s' >&2\n" "cswrap-input.txt" > bin/compiler/gcc
 chmod 0755 "bin/compiler/gcc"
 
 # symlink compiler wrapper
@@ -38,7 +36,7 @@ ln -fsv "$PATH_TO_CSWRAP" bin/wrapper/gcc
 do_test()
 (
     "$@" gcc 2>&1 | sed 's| <--\[gcc\]$||' > cswrap-output.txt || exit $?
-    diff -u "$TEST_DST_DIR/cswrap-expected-output.txt" cswrap-output.txt
+    diff -u cswrap{-expected,}-output.txt
 )
 
 # run the fake compiler through the wrapper and compare its output
