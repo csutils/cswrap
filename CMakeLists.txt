@@ -26,21 +26,23 @@ if(CMAKE_USE_PTHREADS_INIT)
     add_definitions("-pthread")
 endif()
 
-# compile the executable and link with pthreads
+# compile the executable, link with pthreads, and install
 add_executable(cswrap cswrap.c)
 target_link_libraries(cswrap ${CMAKE_THREAD_LIBS_INIT})
-
-# build the man page
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cswrap.1
-    COMMAND a2x -f manpage ${CMAKE_CURRENT_SOURCE_DIR}/cswrap.txt
-    -D ${CMAKE_CURRENT_BINARY_DIR}
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cswrap.txt
-    COMMENT "Generating cswrap.1 man page...")
-add_custom_target(doc ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cswrap.1)
-
-# install the exectuable and man page
 install(TARGETS cswrap DESTINATION bin)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cswrap.1 DESTINATION share/man/man1)
+
+# build and install the man page (if asciidoc is available)
+find_program(A2X a2x)
+if(A2X)
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cswrap.1
+        COMMAND a2x -f manpage ${CMAKE_CURRENT_SOURCE_DIR}/cswrap.txt
+        -D ${CMAKE_CURRENT_BINARY_DIR}
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cswrap.txt
+        COMMENT "Generating cswrap.1 man page...")
+    add_custom_target(doc ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cswrap.1)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cswrap.1
+        DESTINATION share/man/man1)
+endif()
 
 # run test-cases
 file(GLOB runtests "${CMAKE_CURRENT_SOURCE_DIR}/tests/*/runtest.sh")
