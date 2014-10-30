@@ -457,6 +457,11 @@ bool handle_line(char *buf, const char *exclude)
 
     /* canonicalize the file name and restore the previously replaced colon */
     char *abs_path = canonicalize_file_name(buf);
+    if (!abs_path && (ENOENT == errno) && (0 == access(buf, R_OK)))
+        /* work around glibc/valgrind bug that cause realpath() to occasionally
+         * fail with ENOENT for no reason */
+        abs_path = canonicalize_file_name(buf);
+
     *colon = ':';
     if (!abs_path)
         return false;
