@@ -458,7 +458,7 @@ bool handle_line(char *buf, const char *exclude)
     /* canonicalize the file name and restore the previously replaced colon */
     char *abs_path = canonicalize_file_name(buf);
     if (!abs_path && (ENOENT == errno) && (0 == access(buf, R_OK)))
-        /* work around glibc/valgrind bug that cause realpath() to occasionally
+        /* work around glibc/valgrind bug that causes realpath() to occasionally
          * fail with ENOENT for no reason */
         abs_path = canonicalize_file_name(buf);
 
@@ -509,6 +509,10 @@ static volatile sig_atomic_t timed_out;
 
 void signal_handler(int signum)
 {
+    if (SIGCHLD == signum)
+        // SIGCHLD handler is only set for getline() to be interrupted by EINTR
+        return;
+
     if (!tool_pid)
         return;
 
@@ -533,6 +537,7 @@ bool install_signal_forwarder(void)
 {
     static int forwarded_signals[] = {
         SIGINT,
+        SIGCHLD,
         SIGQUIT,
         SIGTERM
     };
