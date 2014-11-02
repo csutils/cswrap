@@ -139,7 +139,7 @@ bool init_cap_file_once(void)
 
     /* wait for other processes to release the capture file lock */
     while (-1 == sem_wait(cap_file_lock)) {
-        if (EAGAIN == errno)
+        if (EINTR == errno)
             continue;
 
         fail("failed to lock %s (%s)", cap_file_lock_name, strerror(errno));
