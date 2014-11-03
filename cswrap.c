@@ -319,8 +319,13 @@ bool handle_cvar(char ***pargv, const enum flag_op op, const char *env_var_name)
         return true;
 
     /* go through all flags separated by ':' */
-    for (;;) {
-        char *term = strchr(slist, ':');
+    char *term;
+    for (;; /* jump to the next flag */ slist = term + 1) {
+        term = strchr(slist, ':');
+        if (term == slist)
+            /* flag resolved to an empty string, skip it! */
+            continue;
+
         if (term)
             /* temporarily replace the separator by zero */
             *term = '\0';
@@ -339,9 +344,6 @@ bool handle_cvar(char ***pargv, const enum flag_op op, const char *env_var_name)
         if (!term)
             /* this was the last flag */
             return true;
-
-        /* jump to the next flag */
-        slist = term + 1;
     }
 }
 
