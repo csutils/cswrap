@@ -15,7 +15,10 @@ for i in $COMPILERS; do
 done
 echo "true"     >> compiler/cc-ok
 echo "false"    >> compiler/cc-fail
-printf 'echo $$ > cc-slow.pid\nsleep 64 &\ntrap "kill $!" EXIT\nwait $!\n' \
+printf 'echo $$ > cc-slow.pid
+"$@" &
+trap "kill $! 2>/dev/null" EXIT
+wait $!\n' \
     >> compiler/cc-slow
 
 # create symlinks to compiler wrapper for all compilers
@@ -47,14 +50,14 @@ rm -f cc-slow.pid
 # kill the compiler directly
 install_killer &
 pid="$!"
-cc-slow 2>cc-slow.out
+cc-slow sleep 64 2>cc-slow.out
 test 143 = "$?" || exit 1
 wait "$pid" || exit 1
 grep '^cswrap: error: child .* terminated by signal 15$' cc-slow.out || exit 1
 
 
 # kill the wrapper, which should forward the signal to the compiler
-cc-slow 2>cc-slow.out &
+cc-slow sleep 64 2>cc-slow.out &
 pid="$!"
 while sleep .1; do
     kill "$pid" && break
@@ -69,7 +72,7 @@ for i in "" cc-slow foo:cc-slow:bar :::cc-slow:::; do
     export CSWRAP_TIMEOUT_FOR="$i"
     cc-ok || exit $?
     cc-fail && exit 1
-    cc-slow 2>cc-slow.out
+    cc-slow sleep 64 2>cc-slow.out
     test 143 = "$?" || exit 1
     grep '^cswrap: error: child .* terminated by signal 15 (timed out)$' \
         cc-slow.out || exit 1
@@ -79,6 +82,9 @@ for i in "" cc-slow foo:cc-slow:bar :::cc-slow:::; do
     test 0 -lt "$pid" || exit 1
     kill "$pid" 2>/dev/null && exit 1
 done
+
+export CSWRAP_TIMEOUT_FOR="clang++:clang:cppcheck"
+cc-slow sleep 2 || exit 1
 
 # all OK
 exit 0
