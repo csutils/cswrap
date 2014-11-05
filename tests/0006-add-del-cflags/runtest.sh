@@ -26,7 +26,7 @@ export CSWRAP_DEL_CXXFLAGS="$DEL_COMMON_FLAGS::"
 # run cswrap through valgrind if available
 EXEC_PREFIX=
 if valgrind --version; then
-    EXEC_PREFIX="valgrind -q --undef-value-errors=no"
+    EXEC_PREFIX="valgrind -q --undef-value-errors=no --error-exitcode=7"
 fi
 
 do_check() {

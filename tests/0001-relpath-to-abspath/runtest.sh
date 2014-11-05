@@ -45,5 +45,5 @@ do_test || exit $?
 if valgrind --version; then
     # run the wrapper through valgrind if available
     # NOTE: we suppers uses of uninitialized values caused by glibc-static
-    do_test valgrind -q --undef-value-errors=no || exit $?
+    do_test valgrind -q --undef-value-errors=no --error-exitcode=7 || exit $?
 fi
