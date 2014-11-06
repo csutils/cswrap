@@ -116,15 +116,10 @@ cd cswrap_build
 ctest %{?_smp_mflags} --output-on-failure
 
 %install
-install -m0755 -d \\
-    "\$RPM_BUILD_ROOT%{_bindir}"                \\
-    "\$RPM_BUILD_ROOT%{_libdir}"                \\
-    "\$RPM_BUILD_ROOT%{_libdir}/cswrap"         \\
-    "\$RPM_BUILD_ROOT%{_mandir}/man1"
-
 cd cswrap_build
 make install DESTDIR="\$RPM_BUILD_ROOT"
 
+install -m0755 -d "\$RPM_BUILD_ROOT%{_libdir}"{,/cswrap}
 for i in c++ cc g++ gcc clang clang++ cppcheck \\
     %{_arch}-redhat-linux-c++ \\
     %{_arch}-redhat-linux-g++ \\
