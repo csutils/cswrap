@@ -507,6 +507,7 @@ void trans_paths_to_abs(const char *exclude)
 }
 
 static volatile pid_t tool_pid;
+static volatile sig_atomic_t use_pg;
 static volatile sig_atomic_t timed_out;
 
 void signal_handler(int signum)
@@ -524,9 +525,13 @@ void signal_handler(int signum)
         timed_out = 1;
     }
 
+    const pid_t kill_pid = (use_pg)
+        ? /* clang process group */ -tool_pid
+        : tool_pid;
+
     /* time elapsed, kill the tool now! */
     const int saved_errno = errno;
-    kill(tool_pid, signum);
+    kill(kill_pid, signum);
     errno = saved_errno;
 }
 
@@ -678,6 +683,10 @@ int main(int argc, char *argv[])
         return fail("pipe() failed: %s", strerror(errno));
     }
 
+    /* create a process group for clang so that we can kill it later on */
+    use_pg = STREQ(base_name, "clang")
+        || STREQ(base_name, "clang++");
+
     int status;
     tool_pid = fork();
     switch (tool_pid) {
@@ -686,6 +695,10 @@ int main(int argc, char *argv[])
             break;
 
         case 0:
+            if (use_pg)
+                /* create a new process group for clang and its children */
+                setpgid(0, 0);
+
             /* run the compiler and redirect its stderr to the pipe */
             close(pipefd[/* rd */ 0]);
             if (-1 == dup2(pipefd[/* wr */ 1], STDERR_FILENO)) {

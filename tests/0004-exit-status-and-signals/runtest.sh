@@ -2,7 +2,7 @@
 source "$1/../testlib.sh"
 set -x
 
-COMPILERS="cc-ok cc-fail cc-slow"
+COMPILERS="cc-ok cc-fail cc-slow clang not-clang"
 
 # create hashed directories for compilers and wrappers
 mkdir -p compiler wrapper
@@ -20,6 +20,7 @@ printf 'echo $$ > cc-slow.pid
 trap "kill $! 2>/dev/null" EXIT
 wait $!\n' \
     >> compiler/cc-slow
+echo "$PWD/compiler/cc-slow \"\$@\"" | tee -a compiler/{,not-}clang >/dev/null
 
 # create symlinks to compiler wrapper for all compilers
 for i in $COMPILERS; do
@@ -57,7 +58,7 @@ grep '^cswrap: error: child .* terminated by signal 15$' cc-slow.out || exit 1
 
 
 # kill the wrapper, which should forward the signal to the compiler
-cc-slow sleep 64 2>cc-slow.out &
+not-clang sleep 64 2>cc-slow.out &
 pid="$!"
 while sleep .1; do
     kill "$pid" && break
@@ -65,6 +66,20 @@ done
 wait "$pid"
 test 143 = "$?" || exit 1
 grep '^cswrap: error: child .* terminated by signal 15$' cc-slow.out || exit 1
+sleep 1
+kill "$(<cc-slow.pid)" || exit 1
+
+# kill the wrapper of clang, which should kill its process group
+clang sleep 64 2>clang.out &
+pid="$!"
+while sleep .1; do
+    kill "$pid" && break
+done
+wait "$pid"
+test 143 = "$?" || exit 1
+grep '^cswrap: error: child .* terminated by signal 15$' clang.out || exit 1
+sleep 1
+kill "$(<cc-slow.pid)" && exit 1
 
 # set a timeout using the wrapper
 export CSWRAP_TIMEOUT=1
