@@ -46,6 +46,15 @@ const char *path_to_wrap = "";
 
 static const char prog_name[] = "cswrap";
 
+static unsigned tool_timeout;
+
+struct strlist {
+    const char          *str;
+    struct strlist      *next;
+};
+
+static struct strlist *file_list;
+
 /* print error and return EXIT_FAILURE */
 static int fail(const char *fmt, ...)
 {
@@ -627,8 +636,92 @@ int /* status */ install_timeout_handler(const char *base_name)
         return fail("unable to install timeout handler");
 
     /* activate the timeout! */
-    alarm((unsigned)time);
+    tool_timeout = time;
+    alarm(tool_timeout);
     return EXIT_SUCCESS;
+}
+
+/* FIXME: copy/pasted from cscppc */
+bool is_input_file_suffix(const char *suffix)
+{
+    return STREQ(suffix, "c")
+        || STREQ(suffix, "C")
+        || STREQ(suffix, "cc")
+        || STREQ(suffix, "cpp")
+        || STREQ(suffix, "cxx");
+}
+
+void emit_kill_msg(int signum, const char *base_name, const char *file)
+{
+    char *msg;
+    static const char event[] = "internal warning";
+    const int rv = (timed_out)
+        ? asprintf(&msg, "%s: %s: child %d timed out after %us\n",
+                file, event, tool_pid, tool_timeout)
+        : asprintf(&msg, "%s: %s: child %d terminated by signal %d\n",
+                file, event, tool_pid, signum);
+
+    if (-1 == rv)
+        /* OOM */
+        return;
+
+    handle_line(msg, base_name);
+    free(msg);
+}
+
+void emit_kill_diagnostic(const int signum, const char *const base_name)
+{
+    struct strlist *it;
+    for (it = file_list; it; it = it->next)
+        emit_kill_msg(signum, base_name, it->str);
+}
+
+void collect_file_list(char **argv)
+{
+    /* iterate over input files and emit diagnost messages */
+    const char *arg;
+    for (; (arg = *argv); ++argv) {
+        /* FIXME: copy/pasted from cscppc */
+        const char *suffix = strrchr(arg, '.');
+        if (!suffix)
+            /* we require the file name to contain at least one dot */
+            continue;
+
+        /* skip behind the dot */
+        ++suffix;
+
+        /* check for a known input file suffix */
+        if (!is_input_file_suffix(suffix))
+            continue;
+
+        /* allocate a new list item for the input file name */
+        struct strlist *item = malloc(sizeof *item);
+        if (!item)
+            /* OOM */
+            continue;
+
+        /* allocate a new string for the input file name */
+        item->str = strdup(arg);
+        if (!item->str) {
+            /* OOM */
+            free(item);
+            continue;
+        }
+
+        /* insert the item into the list */
+        item->next = file_list;
+        file_list = item;
+    }
+}
+
+void destroy_file_list(void)
+{
+    while (file_list) {
+        struct strlist *next = file_list->next;
+        free((char *) file_list->str);
+        free(file_list);
+        file_list = next;
+    }
 }
 
 int main(int argc, char *argv[])
@@ -662,6 +755,9 @@ int main(int argc, char *argv[])
         execv(exec_path, argv);
         return fail("execv() failed: %s", strerror(errno));
     }
+
+    /* collect all input file names and create a list of them */
+    collect_file_list(argv);
 
     /* clone argv[] */
     char **argv_dup = clone_argv(argc, argv);
@@ -743,6 +839,7 @@ int main(int argc, char *argv[])
                 status = WEXITSTATUS(status);
             else if WIFSIGNALED(status) {
                 const int signum = WTERMSIG(status);
+                emit_kill_diagnostic(signum, base_name);
                 const char *msg = "";
                 if (timed_out)
                     msg = " (timed out)";
@@ -758,6 +855,7 @@ cleanup:
     /* close the capture file and release the lock in case it has been open */
     release_cap_file();
 
+    destroy_file_list();
     free(exec_path);
     free(base_name);
     return status;

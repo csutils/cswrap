@@ -82,6 +82,13 @@ License:    GPLv3+
 URL:        https://git.fedorahosted.org/cgit/cswrap.git
 Source0:    https://git.fedorahosted.org/cgit/cswrap.git/snapshot/$SRC
 
+# cswrap-1.3.0+ emits internal warnings per timed out scans (used by csdiff to
+# eliminate false positivies that such a scan would otherwise cause) ==> force
+# new enough versions of the higher-level tools that will suppress them.
+Conflicts: csbuild       < 1.7.0
+Conflicts: csdiff        < 1.2.0
+Conflicts: csmock-common < 1.7.0
+
 BuildRequires: asciidoc
 BuildRequires: cmake
 
