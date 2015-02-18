@@ -425,8 +425,8 @@ void write_out(
     fprintf(fp, " <--[%s]\n", tool);
 }
 
-/* per-line handler of trans_paths_to_abs() */
-bool handle_line(char *buf, const char *exclude)
+/* translate one line of a diagnostic message if an input file is matched */
+bool translate_line(char *buf, const char *exclude)
 {
     char *const buf_orig = buf;
     struct str_item *item;
@@ -479,31 +479,30 @@ bool handle_line(char *buf, const char *exclude)
     return true;
 }
 
+/* per-line handler of trans_paths_to_abs() */
+void handle_line(char *buf, const char *exclude)
+{
+    if (translate_line(buf, exclude))
+        return;
+
+    fputs(buf, stderr);
+
+    if (init_cap_file_once())
+        /* write the message also to capture file if the feature is enabled */
+        fputs(buf, cap_file);
+}
+
 /* canonicalize paths the lines from stdin start with, write them to stderr */
 void trans_paths_to_abs(const char *exclude)
 {
-    /* check whether we should capture diagnostic messages to a file */
-    init_cap_file_name();
-
     /* handle the input from stdin line by line */
     char *buf = NULL;
     size_t buf_size = 0;
-    while (0 < getline(&buf, &buf_size, stdin)) {
-        if (handle_line(buf, exclude))
-            continue;
-
-        fputs(buf, stderr);
-
-        if (init_cap_file_once())
-            /* write the message also to capture file if the feature is enabled */
-            fputs(buf, cap_file);
-    }
+    while (0 < getline(&buf, &buf_size, stdin))
+        handle_line(buf, exclude);
 
     /* release line buffer */
     free(buf);
-
-    /* close the capture file and release the lock in case it has been open */
-    release_cap_file();
 }
 
 static volatile pid_t tool_pid;
@@ -723,6 +722,9 @@ int main(int argc, char *argv[])
             if (EXIT_SUCCESS != status)
                 break;
 
+            /* check whether we should capture diagnostic messages to a file */
+            init_cap_file_name();
+
             trans_paths_to_abs(/* exclude */ base_name);
 
             /* wait for the child to exit */
@@ -753,6 +755,9 @@ int main(int argc, char *argv[])
     }
 
 cleanup:
+    /* close the capture file and release the lock in case it has been open */
+    release_cap_file();
+
     free(exec_path);
     free(base_name);
     return status;
