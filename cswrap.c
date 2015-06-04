@@ -71,7 +71,6 @@ static int fail(const char *fmt, ...)
 
 static int usage(char *argv[])
 {
-    /* TODO: document environment variables that cswrap is perceptive to */
     fprintf(stderr, "Usage:\n\
     export PATH=\"`%s --print-path-to-wrap`:$PATH\"\n\n\
     %s is a generic compiler wrapper that translates relative paths to\n\
