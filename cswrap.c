@@ -153,7 +153,7 @@ bool lock_cap_file(void)
         }
 
         /* be verbose in case we are waiting for the lock too long */
-        struct tm tm = { };
+        struct tm tm = { /* for old compilers */ 0 };
         localtime_r(&t_end, &tm);
         fprintf(stderr, "%s: warning: %04d-%02d-%02d %02d:%02d:%02d %s %s\n",
                 /* self */ prog_name,
