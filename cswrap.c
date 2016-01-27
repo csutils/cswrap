@@ -670,12 +670,12 @@ int /* status */ install_timeout_handler(const char *base_name)
         return EXIT_SUCCESS;
 
     /* parse the timeout value */
-    long time;
+    long timeout;
     char c;
-    if (1 != sscanf(str_time, "%li%c", &time, &c))
+    if (1 != sscanf(str_time, "%li%c", &timeout, &c))
         return fail("unable to parse the value of $CSWRAP_TIMEOUT");
 
-    if (UINT_MAX < time || time <= 0L)
+    if (UINT_MAX < timeout || timeout <= 0L)
         return fail("the value of $CSWRAP_TIMEOUT is out of range");
 
     /* install SIGALRM handler */
@@ -683,7 +683,7 @@ int /* status */ install_timeout_handler(const char *base_name)
         return fail("unable to install timeout handler");
 
     /* activate the timeout! */
-    tool_timeout = time;
+    tool_timeout = timeout;
     alarm(tool_timeout);
     return EXIT_SUCCESS;
 }
