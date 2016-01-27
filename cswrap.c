@@ -19,6 +19,9 @@
 
 #define _GNU_SOURCE 
 
+/* for sem_timedwait() */
+#define _POSIX_C_SOURCE 200112L
+
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>           /* for O_* constants */
@@ -34,6 +37,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <time.h>            /* for time() */
 #include <unistd.h>
 
 #define STREQ(a, b) (!strcmp(a, b))
@@ -111,6 +115,54 @@ void init_cap_file_name(void)
         cap_file_name = name;
 }
 
+bool lock_cap_file(void)
+{
+    static const char fail_msg[] = "failed to lock %s (%s)";
+
+    for (;;) {
+        /* obtain current time */
+        const time_t t_beg = time(NULL);
+        if ((time_t) -1 == t_beg) {
+            fail(fail_msg, cap_file_lock_name, "time() failed");
+            return false;
+        }
+
+        /* time-bounded lock */
+        const time_t t_end = t_beg + /* block for [s] */ 15;
+        const struct timespec timeout = {
+            /* tv_sec   */ t_end,
+            /* tv_nsec  */ 0L
+        };
+        if (0 == sem_timedwait(cap_file_lock, &timeout))
+            /* semaphore successfully locked */
+            return true;
+
+        switch (errno) {
+            case EINTR:
+                /* interrupted by a signal ... try again! */
+                continue;
+
+            case ETIMEDOUT:
+                /* we are waiting for someone eles to release it... */
+                break;
+
+            default:
+                /* non-recoverable error ... giving up */
+                fail(fail_msg, cap_file_lock_name, strerror(errno));
+                return false;
+        }
+
+        /* be verbose in case we are waiting for the lock too long */
+        struct tm tm = { };
+        localtime_r(&t_end, &tm);
+        fprintf(stderr, "%s: warning: %04d-%02d-%02d %02d:%02d:%02d %s %s\n",
+                /* self */ prog_name,
+                /* date */ tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+                /* time */ tm.tm_hour, tm.tm_min, tm.tm_sec,
+                "still trying to lock", cap_file_lock_name);
+    }
+}
+
 bool unlock_cap_file(void)
 {
     if (!sem_post(cap_file_lock))
@@ -146,11 +198,7 @@ bool init_cap_file_once(void)
     }
 
     /* wait for other processes to release the capture file lock */
-    while (-1 == sem_wait(cap_file_lock)) {
-        if (EINTR == errno)
-            continue;
-
-        fail("failed to lock %s (%s)", cap_file_lock_name, strerror(errno));
+    if (!lock_cap_file()) {
         close_cap_file_lock();
         return false;
     }
