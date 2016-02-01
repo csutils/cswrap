@@ -70,7 +70,9 @@ ENVIRONMENT VARIABLES
     are matched for exact match and they are case-sensitive.  If a compiler
     flag appears in the command line multiple times, all its occurrences are
     removed.  *$CSWRAP_DEL_CFLAGS* applies to compilation of C sources only.
-    *$CSWRAP_DEL_CXXFLAGS* applies to compilation of C++ sources only.
+    *$CSWRAP_DEL_CXXFLAGS* applies to compilation of C++ sources only.  Flags
+    to be removed can be specified by shell wildcard patterns (using the format
+    accepted by fnmatch(3)).
 
 *CSWRAP_ADD_CFLAGS*, *CSWRAP_ADD_CXXFLAGS*::
     cswrap expects a colon-separated list of compiler flags that should be

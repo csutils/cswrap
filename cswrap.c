@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>           /* for O_* constants */
+#include <fnmatch.h>
 #include <libgen.h>
 #include <limits.h>
 #include <semaphore.h>       /* for named semaphores */
@@ -338,7 +339,7 @@ bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
     int argc = 0;
     char **argv = *pargv;
     while (*argv) {
-        if (FO_DEL == op && STREQ(*argv, flag))
+        if (FO_DEL == op && !fnmatch(flag, *argv, /* flags */ 0))
             del_arg(argv);
         else {
             ++argc;

@@ -50,6 +50,9 @@ do_check g++ "-Werror -Wxxx" "-Wxxx -Wall -Wextra -Wctor-dtor-privacy -Woverload
 # removing multiple occurrences of a flag
 do_check gcc "-Werror -g -O0 -Werror" "-g -O0 -Wall -Wextra -Wno-unknown-pragmas -Wstrict-prototypes"
 
+# removing compiler flags using a wildcard pattern
+CSWRAP_DEL_CFLAGS="-Werror*" do_check gcc "-Werror=format-security -g -O0 -Werror=deprecated-declarations" "-g -O0 -Wall -Wextra -Wno-unknown-pragmas -Wstrict-prototypes"
+
 # adding a flag that is already there
 do_check g++ "-Wextra -g -O0 -Wno-extra" "-Wextra -g -O0 -Wno-extra -Wall -Wextra -Wctor-dtor-privacy -Woverloaded-virtual"
 
