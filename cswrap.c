@@ -600,8 +600,9 @@ static const struct sigaction sa = {
 bool install_signal_forwarder(void)
 {
     static int forwarded_signals[] = {
-        SIGINT,
         SIGCHLD,
+        SIGINT,
+        SIGPIPE,
         SIGQUIT,
         SIGTERM
     };
