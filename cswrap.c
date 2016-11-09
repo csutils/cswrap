@@ -23,6 +23,7 @@
 #define _POSIX_C_SOURCE 200112L
 
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>           /* for O_* constants */
 #include <fnmatch.h>
@@ -57,6 +58,9 @@ struct strlist {
     const char          *str;
     struct strlist      *next;
 };
+
+/* true if we are wrapping clang invoked with --analyze */
+static bool clang_analyzer;
 
 static struct strlist *file_list;
 
@@ -439,6 +443,36 @@ bool find_conftest_in_args(char **argv)
     return false;
 }
 
+/* return true if there is a cmd-line argument equal to "--analyze" */
+bool find_analyze_in_args(char **argv)
+{
+    for (; *argv; ++argv)
+        if (STREQ(*argv, "--analyze"))
+            return true;
+
+    return false;
+}
+
+/* return true if msg matches "[0-9:] note: " and clang_analyzer is true */
+bool clang_analyzer_note(const char *msg)
+{
+    if (!clang_analyzer)
+        return false;
+
+    for (; *msg; ++msg) {
+        const unsigned char c = *msg;
+        if (':' == c || isdigit(c))
+            continue;
+
+        if (' ' == c) {
+            static const char note_prefix[] = " note: ";
+            return !strncmp(msg, note_prefix, sizeof(note_prefix) - 1U);
+        }
+    }
+
+    return false;
+}
+
 struct str_item {
     const char *str;
     size_t      len;
@@ -526,8 +560,9 @@ bool translate_line(char *buf, const char *exclude)
     if (!abs_path)
         return false;
 
-    /* write the translated message to stderr */
-    write_out(stderr, buf_orig, buf, abs_path, colon, /* tool */ exclude);
+    if (!clang_analyzer_note(colon))
+        /* write the translated message to stderr */
+        write_out(stderr, buf_orig, buf, abs_path, colon, /* tool */ exclude);
 
     if (init_cap_file_once())
         /* write the message also to capture file if the feature is enabled */
@@ -806,6 +841,13 @@ int main(int argc, char *argv[])
         return fail("execv() failed: %s", strerror(errno));
     }
 
+    /* create a process group for clang so that we can kill it later on */
+    use_pg = STREQ(base_name, "clang")
+        || STREQ(base_name, "clang++");
+    if (use_pg)
+        /* check whether clang is ivoked with --analyze */
+        clang_analyzer = find_analyze_in_args(argv);
+
     /* collect all input file names and create a list of them */
     collect_file_list(argv);
 
@@ -827,10 +869,6 @@ int main(int argc, char *argv[])
         free(base_name);
         return fail("pipe() failed: %s", strerror(errno));
     }
-
-    /* create a process group for clang so that we can kill it later on */
-    use_pg = STREQ(base_name, "clang")
-        || STREQ(base_name, "clang++");
 
     int status;
     tool_pid = fork();
