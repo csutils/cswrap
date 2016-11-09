@@ -62,6 +62,9 @@ struct strlist {
 /* true if we are wrapping clang invoked with --analyze */
 static bool clang_analyzer;
 
+/* how many non-translated lines should not be written to stderr */
+static int suppress_plain_lines;
+
 static struct strlist *file_list;
 
 /* print error and return EXIT_FAILURE */
@@ -560,9 +563,14 @@ bool translate_line(char *buf, const char *exclude)
     if (!abs_path)
         return false;
 
-    if (!clang_analyzer_note(colon))
+    if (clang_analyzer_note(colon))
+        /* suppress the code snippet that follows immediately after the note */
+        suppress_plain_lines = 2;
+    else {
         /* write the translated message to stderr */
         write_out(stderr, buf_orig, buf, abs_path, colon, /* tool */ exclude);
+        suppress_plain_lines = 0;
+    }
 
     if (init_cap_file_once())
         /* write the message also to capture file if the feature is enabled */
@@ -578,7 +586,10 @@ void handle_line(char *buf, const char *exclude)
     if (translate_line(buf, exclude))
         return;
 
-    fputs(buf, stderr);
+    if (0 < suppress_plain_lines)
+        --suppress_plain_lines;
+    else
+        fputs(buf, stderr);
 
     if (init_cap_file_once())
         /* write the message also to capture file if the feature is enabled */
