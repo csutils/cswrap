@@ -1,0 +1,24 @@
+src/browser.c:87:13: warning: The left operand of '!=' is a garbage value <--[clang]
+#    if (dir != NULL) {
+#        ~~~ ^
+
+src/browser.c: scope_hint: In function ‘do_browser’ <--[clang]
+src/browser.c:196:19: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[clang]
+#      if (selected >= width)
+#                   ^~
+
+src/browser.c:202:19: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[clang]
+#      if (selected < width)
+#                   ^
+
+src/browser.c:204:24: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[clang]
+#      else if (selected < editwinrows * width)
+#                        ^
+
+src/browser.c:269:20: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[clang]
+#      for (i = 0; i < filelist_len; i++)
+#                    ^
+
+src/files.c:499:2: warning: Function call argument is an uninitialized value <--[clang]
+#        read_file(f, rc, realname, undoable, new_buffer);
+#        ^         ~

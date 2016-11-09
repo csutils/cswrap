@@ -1,0 +1,109 @@
+src/browser.c:87:13: warning: The left operand of '!=' is a garbage value <--[gcc]
+#    if (dir != NULL) {
+#        ~~~ ^
+src/browser.c:57:5: note: 'dir' declared without an initial value <--[gcc]
+#    DIR *dir;
+#    ^~~~~~~~
+src/browser.c:68:9: note: Assuming 'path' is equal to null <--[gcc]
+#    if (path != NULL)
+#        ^~~~~~~~~~~~
+src/browser.c:68:5: note: Taking false branch <--[gcc]
+#    if (path != NULL)
+#    ^
+src/browser.c:71:22: note: Left side of '||' is true <--[gcc]
+#    if (path == NULL || dir == NULL) {
+#                     ^
+src/browser.c:74:6: note: Assuming 'filelist' is not equal to null <--[gcc]
+#        if (filelist == NULL) {
+#            ^~~~~~~~~~~~~~~~
+src/browser.c:74:2: note: Taking false branch <--[gcc]
+#        if (filelist == NULL) {
+#        ^
+src/browser.c:87:13: note: The left operand of '!=' is a garbage value <--[gcc]
+#    if (dir != NULL) {
+#        ~~~ ^
+
+src/browser.c: scope_hint: In function ‘do_browser’ <--[gcc]
+src/browser.c:196:19: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[gcc]
+#      if (selected >= width)
+#                   ^~
+
+src/browser.c:202:19: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[gcc]
+#      if (selected < width)
+#                   ^
+
+src/browser.c:204:24: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[gcc]
+#      else if (selected < editwinrows * width)
+#                        ^
+
+src/browser.c:269:20: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[gcc]
+#      for (i = 0; i < filelist_len; i++)
+#                    ^
+
+src/files.c:499:2: warning: Function call argument is an uninitialized value <--[gcc]
+#        read_file(f, rc, realname, undoable, new_buffer);
+#        ^         ~
+src/files.c:425:24: note: Assuming 'openfile' is not equal to null <--[gcc]
+#    bool new_buffer = (openfile == NULL
+#                       ^~~~~~~~~~~~~~~~
+src/files.c:425:24: note: Left side of '||' is false <--[gcc]
+src/files.c:433:5: note: 'f' declared without an initial value <--[gcc]
+#    FILE *f;
+#    ^~~~~~~
+src/files.c:441:5: note: Taking false branch <--[gcc]
+#    if (check_operating_dir(filename, FALSE)) {
+#    ^
+src/files.c:452:5: note: Taking false branch <--[gcc]
+#    if (strcmp(filename, "") != 0) {
+#    ^
+src/files.c:467:5: note: Taking false branch <--[gcc]
+#    if (new_buffer) {
+#    ^
+src/files.c:488:11: note: Left side of '&&' is true <--[gcc]
+#    rc = (filename[0] != '\0' && !ISSET(NOREAD_MODE)) ?
+#          ^
+src/files.c:488:10: note: '?' condition is true <--[gcc]
+#    rc = (filename[0] != '\0' && !ISSET(NOREAD_MODE)) ?
+#         ^
+src/files.c:489:3: note: Calling 'open_file' <--[gcc]
+#                open_file(realname, new_buffer, FALSE, &f) : -2;
+#                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/files.c:971:9: note: Assuming 'full_filename' is equal to null <--[gcc]
+#    if (full_filename == NULL || (stat(full_filename, &fileinfo) == -1 &&
+#        ^~~~~~~~~~~~~~~~~~~~~
+src/files.c:971:31: note: Left side of '||' is true <--[gcc]
+#    if (full_filename == NULL || (stat(full_filename, &fileinfo) == -1 &&
+#                              ^
+src/files.c:975:9: note: Calling 'stat' <--[gcc]
+#    if (stat(full_filename, &fileinfo) == -1) {
+#        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/files.c:975:9: note: Returning from 'stat' <--[gcc]
+#    if (stat(full_filename, &fileinfo) == -1) {
+#        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/files.c:975:5: note: Taking true branch <--[gcc]
+#    if (stat(full_filename, &fileinfo) == -1) {
+#    ^
+src/files.c:981:2: note: Taking true branch <--[gcc]
+#        if ((fd = open(filename, O_RDONLY)) != -1) {
+#        ^
+src/files.c:982:6: note: Taking true branch <--[gcc]
+#            if (!quiet)
+#            ^
+src/files.c:489:3: note: Returning from 'open_file' <--[gcc]
+#                open_file(realname, new_buffer, FALSE, &f) : -2;
+#                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/files.c:493:9: note: Left side of '&&' is true <--[gcc]
+#    if (rc != -1 && new_buffer)
+#        ^
+src/files.c:493:5: note: Taking false branch <--[gcc]
+#    if (rc != -1 && new_buffer)
+#    ^
+src/files.c:498:9: note: Assuming 'rc' is > 0 <--[gcc]
+#    if (rc > 0) {
+#        ^~~~~~
+src/files.c:498:5: note: Taking true branch <--[gcc]
+#    if (rc > 0) {
+#    ^
+src/files.c:499:2: note: Function call argument is an uninitialized value <--[gcc]
+#        read_file(f, rc, realname, undoable, new_buffer);
+#        ^         ~
