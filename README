@@ -6,10 +6,7 @@ compiler (gcc, g++, ...) and put it to your $PATH.  cswrap --help prints usage
 to standard error output.  You can find the up2date sources in the following
 repository:
 
-    https://git.fedorahosted.org/cgit/cswrap.git
+    https://github.com/kdudka/cswrap
 
-Please report bugs and feature requests to the following mailing-list:
-
-    https://fedorahosted.org/mailman/listinfo/cswrap-devel
-
-cswrap is licensed under GPLv3+, see COPYING for details.
+cswrap is licensed under GPLv3+, see COPYING for details.  Please report bugs
+and feature requests on GitHub using the above URL.

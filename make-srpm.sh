@@ -79,8 +79,8 @@ Summary:    Generic compiler wrapper
 
 Group:      Development/Tools
 License:    GPLv3+
-URL:        https://git.fedorahosted.org/cgit/cswrap.git
-Source0:    https://git.fedorahosted.org/cgit/cswrap.git/snapshot/$SRC
+URL:        https://github.com/kdudka/%{name}
+Source0:    https://github.com/kdudka/%{name}/releases/download/%{name}-%{version}/%{name}-%{version}.tar.xz
 
 # cswrap-1.3.0+ emits internal warnings per timed out scans (used by csdiff to
 # eliminate false positivies that such a scan would otherwise cause) ==> force
