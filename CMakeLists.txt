@@ -55,3 +55,7 @@ foreach(runtest ${runtests})
         "${CMAKE_CURRENT_BINARY_DIR}/tests/${test_name}/"
         "${CMAKE_CURRENT_BINARY_DIR}/cswrap")
 endforeach()
+
+# provide the 'check' target of make
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+add_dependencies(check cswrap)

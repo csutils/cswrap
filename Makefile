@@ -20,13 +20,20 @@ CTEST ?= ctest
 
 .PHONY: all check clean distclean distcheck install
 
+# define $(space) as " " to bude used in $(subst ...)
+space :=
+space +=
+
+# generate ;-sepearated $(CTEST_CMD)
+CTEST_CMD = $(subst $(space),;,$(CTEST) --output-on-failure)
+
 all:
 	mkdir -p cswrap_build
-	cd cswrap_build && $(CMAKE) ..
+	cd cswrap_build && $(CMAKE) -DCMAKE_CTEST_COMMAND="$(CTEST_CMD)" ..
 	$(MAKE) -C cswrap_build
 
 check: all
-	cd cswrap_build && $(CTEST) --output-on-failure
+	cd cswrap_build && $(MAKE) check
 
 clean:
 	if test -e cswrap_build/Makefile; then $(MAKE) clean -C cswrap_build; fi
