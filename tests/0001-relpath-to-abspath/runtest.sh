@@ -3,12 +3,12 @@ source "$1/../testlib.sh"
 
 # prepare the input for cswrap
 sed -e "s|/builddir/build/BUILD/||" \
-    "$TEST_SRC_DIR/cswrap-output.txt" \
+    "$TEST_SRC_DIR/test-data.txt" \
     > cswrap-input.txt
 
 # prepare the expected output of cswrap
 sed -e "s|/builddir/build/BUILD|$PWD|" \
-    "$TEST_SRC_DIR/cswrap-output.txt" \
+    "$TEST_SRC_DIR/test-data.txt" \
     > cswrap-expected-output.txt
 
 # create a dummy directory tree simulating the files being compiled
