@@ -88,8 +88,11 @@ static int usage(char *argv[])
     %s is a generic compiler wrapper that translates relative paths to\n\
     absolute paths in diagnostic messages.  Create a symbolic link to %s\n\
     named as your compiler (gcc, g++, ...) and put it to your $PATH.\n\
-    %s --help prints this text to standard error output.\n",
-    prog_name, prog_name, prog_name, prog_name);
+    \n\
+    %s --help prints this text to standard error output.\n\
+    \n\
+    %s --force-cap-file-unlock releases a stray lock (e.g. after crash)\n",
+    prog_name, prog_name, prog_name, prog_name, prog_name);
 
     for (; *argv; ++argv)
         if (STREQ("--help", *argv))
@@ -98,16 +101,6 @@ static int usage(char *argv[])
 
     /* wrapper called directly, no argument matched */
     return EXIT_FAILURE;
-}
-
-static int handle_args(const int argc, char *argv[])
-{
-    if (argc == 2 && STREQ("--print-path-to-wrap", argv[1])) {
-        printf("%s\n", path_to_wrap);
-        return EXIT_SUCCESS;
-    }
-
-    return usage(argv);
 }
 
 static FILE *cap_file;
@@ -242,6 +235,33 @@ void release_cap_file(void)
     /* unlock and release the lock */
     unlock_cap_file();
     close_cap_file_lock();
+}
+
+int force_cap_file_unlock(void)
+{
+    /* attempt to open an _existing_ semaphore */
+    cap_file_lock = sem_open(cap_file_lock_name, 0);
+    if (!cap_file_lock) {
+        fail("failed to open %s (%s)", cap_file_lock_name, strerror(errno));
+        return EXIT_FAILURE;
+    }
+
+    /* read the original value of the semaphore */
+    int value_before = -1;
+    sem_getvalue(cap_file_lock, &value_before);
+
+    int status = EXIT_FAILURE;
+    if (0 == value_before && unlock_cap_file())
+        status = EXIT_SUCCESS;
+
+    /* read the resulting value of the semaphore */
+    int value_after = -1;
+    sem_getvalue(cap_file_lock, &value_after);
+
+    fprintf(stderr, "%s: warning: attempted to unlock cap file: %d -> %d\n",
+            prog_name, value_before, value_after);
+
+    return status;
 }
 
 /* return heap-allocated canonicalized tool name, NULL if not found */
@@ -818,6 +838,24 @@ void destroy_file_list(void)
         free(file_list);
         file_list = next;
     }
+}
+
+static int handle_args(const int argc, char *argv[])
+{
+    if (argc != 2)
+        /* unsupported count of args for a direct invocation */
+        return usage(argv);
+
+    if (STREQ("--force-cap-file-unlock", argv[1]))
+        return force_cap_file_unlock();
+
+    if (STREQ("--print-path-to-wrap", argv[1])) {
+        printf("%s\n", path_to_wrap);
+        return EXIT_SUCCESS;
+    }
+
+    /* arg not matched */
+    return usage(argv);
 }
 
 int main(int argc, char *argv[])
