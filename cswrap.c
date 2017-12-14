@@ -255,6 +255,12 @@ int force_cap_file_unlock(void)
     /* attempt to open an _existing_ semaphore */
     cap_file_lock = sem_open(cap_file_lock_name, 0);
     if (!cap_file_lock) {
+        warn("failed to open %s (%s), retrying with O_CREAT...",
+                cap_file_lock_name, strerror(errno));
+        cap_file_lock = sem_open(cap_file_lock_name, O_CREAT, 0660, 0);
+    }
+
+    if (!cap_file_lock) {
         fail("failed to open %s (%s)", cap_file_lock_name, strerror(errno));
         return EXIT_FAILURE;
     }
@@ -273,6 +279,8 @@ int force_cap_file_unlock(void)
 
     warn("attempted to unlock cap file: %d -> %d", value_before, value_after);
 
+    /* close the semaphore and exit */
+    close_cap_file_lock();
     return status;
 }
 
