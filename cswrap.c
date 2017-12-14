@@ -67,18 +67,31 @@ static int suppress_plain_lines;
 
 static struct strlist *file_list;
 
+/* print a warning/error message */
+static void print_msg(const char *what, const char *fmt, va_list ap)
+{
+    fprintf(stderr, "%s: %s: ", prog_name, what);
+    vfprintf(stderr, fmt, ap);
+    fputc('\n', stderr);
+}
+
 /* print error and return EXIT_FAILURE */
 static int fail(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-
-    fprintf(stderr, "%s: error: ", prog_name);
-    vfprintf(stderr, fmt, ap);
-    fputc('\n', stderr);
-
+    print_msg("error", fmt, ap);
     va_end(ap);
     return EXIT_FAILURE;
+}
+
+/* print a warning message */
+static void warn(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    print_msg("warning", fmt, ap);
+    va_end(ap);
 }
 
 static int usage(char *argv[])
@@ -157,7 +170,7 @@ bool lock_cap_file(void)
         struct tm tm;
         memset(&tm, 0, sizeof tm);
         localtime_r(&t_end, &tm);
-        fprintf(stderr, "%s: warning: %04d-%02d-%02d %02d:%02d:%02d %s %s\n",
+        warn("%04d-%02d-%02d %02d:%02d:%02d %s %s",
                 /* self */ prog_name,
                 /* date */ tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
                 /* time */ tm.tm_hour, tm.tm_min, tm.tm_sec,
@@ -258,8 +271,7 @@ int force_cap_file_unlock(void)
     int value_after = -1;
     sem_getvalue(cap_file_lock, &value_after);
 
-    fprintf(stderr, "%s: warning: attempted to unlock cap file: %d -> %d\n",
-            prog_name, value_before, value_after);
+    warn("attempted to unlock cap file: %d -> %d", value_before, value_after);
 
     return status;
 }
