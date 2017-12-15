@@ -44,8 +44,6 @@
 #include <time.h>            /* for time() */
 #include <unistd.h>
 
-#define STREQ(a, b) (!strcmp(a, b))
-
 #ifdef PATH_TO_WRAP
 const char *path_to_wrap = PATH_TO_WRAP;
 #else
@@ -318,10 +316,8 @@ fail:
 }
 
 /* return heap-allocated canonicalized tool name, NULL if not found */
-static char* find_tool_in_path(const char *base_name)
+static char* find_tool_in_path(const char *base_name, char *path)
 {
-    /* read $PATH */
-    char *path = getenv("PATH");
     if (!path)
         return NULL;
 
@@ -878,8 +874,12 @@ int main(int argc, char *argv[])
     if (!install_signal_forwarder())
         return fail("unable to install signal forwarder");
 
+    /* remove self from $PATH */
+    char *path = getenv("PATH");
+    remove_self_from_path(base_name, path);
+
     /* find the requested tool in $PATH */
-    char *exec_path = find_tool_in_path(base_name);
+    char *exec_path = find_tool_in_path(base_name, path);
     if (!exec_path) {
         fail("executable not found: %s (%s)", base_name, argv[0]);
         free(base_name);

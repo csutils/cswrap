@@ -20,7 +20,14 @@
 #ifndef CSWRAP_UTIL_H
 #define CSWRAP_UTIL_H
 
+#include <stdbool.h>
+
+#define STREQ(a, b) (!strcmp(a, b))
+
 /* insert PREFIX at the begin ARGC/ARGV array to appear in process listing */
 void tag_process_name(const char *prefix, const int argc, char *argv[]);
+
+/* remove all $PATH items where TOOL can be found after symlink dereference */
+bool remove_self_from_path(const char *tool, char *path);
 
 #endif /* CSWRAP_UTIL_H */
