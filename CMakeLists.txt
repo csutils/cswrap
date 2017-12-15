@@ -27,7 +27,7 @@ if(CMAKE_USE_PTHREADS_INIT)
 endif()
 
 # compile the executable, link with pthreads, and install
-add_executable(cswrap cswrap.c)
+add_executable(cswrap cswrap.c cswrap-util.c)
 target_link_libraries(cswrap ${CMAKE_THREAD_LIBS_INIT})
 install(TARGETS cswrap DESTINATION bin)
 

@@ -22,6 +22,8 @@
 /* for sem_timedwait() */
 #define _POSIX_C_SOURCE 200112L
 
+#include "cswrap-util.h"
+
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -731,26 +733,6 @@ bool timeout_disabled_for(const char *base_name)
     }
 }
 
-void tag_process_name(const int argc, char *argv[])
-{
-    static const char prefix[] = "[cswrap] ";
-    static const size_t prefix_len = sizeof prefix - 1U;
-
-    /* obtain bounds of the array pointed by argv[] */
-    char *beg = argv[0];
-    char *end = argv[argc - 1];
-    while (*end++)
-        ;
-    const size_t total = end - beg;
-    if (total <= prefix_len)
-        /* not enough space to insert the prefix */
-        return;
-
-    /* shift the contents by prefix_len to right and insert the prefix */
-    memmove(beg + prefix_len, beg, total - prefix_len - 1U);
-    memcpy(beg, prefix, prefix_len);
-}
-
 int /* status */ install_timeout_handler(const char *base_name)
 {
     const char *str_time = getenv("CSWRAP_TIMEOUT");
@@ -969,7 +951,7 @@ int main(int argc, char *argv[])
                 break;
             }
 
-            tag_process_name(argc, argv);
+            tag_process_name("[cswrap] ", argc, argv);
 
             status = install_timeout_handler(base_name);
             if (EXIT_SUCCESS != status)
