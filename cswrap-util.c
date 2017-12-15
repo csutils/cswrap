@@ -44,7 +44,7 @@ void tag_process_name(const char *prefix, const int argc, char *argv[])
     memcpy(beg, prefix, prefix_len);
 }
 
-bool remove_self_from_path(const char *tool, char *path)
+bool remove_self_from_path(const char *tool, char *path, const char *wrap)
 {
     if (!path)
         return false;
@@ -73,7 +73,7 @@ bool remove_self_from_path(const char *tool, char *path)
 
         /* compare the canonicalized basename with wrapper_name */
         char *exec_path = canonicalize_file_name(raw_path);
-        const bool self = exec_path && STREQ("cswrap", basename(exec_path));
+        const bool self = exec_path && STREQ(wrap, basename(exec_path));
         free(exec_path);
         free(raw_path);
 

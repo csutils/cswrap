@@ -876,7 +876,7 @@ int main(int argc, char *argv[])
 
     /* remove self from $PATH */
     char *path = getenv("PATH");
-    remove_self_from_path(base_name, path);
+    remove_self_from_path(base_name, path, "cswrap");
 
     /* find the requested tool in $PATH */
     char *exec_path = find_tool_in_path(base_name, path);

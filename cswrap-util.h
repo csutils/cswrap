@@ -28,6 +28,6 @@
 void tag_process_name(const char *prefix, const int argc, char *argv[]);
 
 /* remove all $PATH items where TOOL can be found after symlink dereference */
-bool remove_self_from_path(const char *tool, char *path);
+bool remove_self_from_path(const char *tool, char *path, const char *wrap);
 
 #endif /* CSWRAP_UTIL_H */
