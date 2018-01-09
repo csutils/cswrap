@@ -704,12 +704,25 @@ bool install_signal_forwarder(void)
     return true;
 }
 
-bool timeout_disabled_for(const char *base_name)
+bool timeout_disabled_for(const char *base_name, char *argv[])
 {
     const char *str_list = getenv("CSWRAP_TIMEOUT_FOR");
     if (!str_list || !str_list[0])
         /* CSWRAP_TIMEOUT_FOR is unset or empty */
         return false;
+
+    if (STREQ(base_name, "clang") || STREQ(base_name, "clang++")) {
+        /* XXX: If $CSWRAP_TIMEOUT_FOR is set and we are wrapping clang or
+         * clang++, do not set the timeout unless it runs as the analyzer.
+         * Otherwise, we could unintententionally kill compiler or linker.
+         * FIXME: Implement the timeout in cscppc/csclng instead. */
+        for (; *argv; ++argv)
+            if (STREQ(*argv, "--analyze"))
+                break;
+        if (!*argv)
+            /* --analyze not found in argv[] --> assume compiler/linker */
+            return true;
+    }
 
     const size_t len = strlen(base_name);
 
@@ -729,10 +742,10 @@ bool timeout_disabled_for(const char *base_name)
     }
 }
 
-int /* status */ install_timeout_handler(const char *base_name)
+int /* status */ install_timeout_handler(const char *base_name, char *argv[])
 {
     const char *str_time = getenv("CSWRAP_TIMEOUT");
-    if (!str_time || !str_time[0] || timeout_disabled_for(base_name))
+    if (!str_time || !str_time[0] || timeout_disabled_for(base_name, argv))
         /* no timeout requested */
         return EXIT_SUCCESS;
 
@@ -953,7 +966,7 @@ int main(int argc, char *argv[])
 
             tag_process_name("[cswrap] ", argc, argv);
 
-            status = install_timeout_handler(base_name);
+            status = install_timeout_handler(base_name, argv);
             if (EXIT_SUCCESS != status)
                 break;
 

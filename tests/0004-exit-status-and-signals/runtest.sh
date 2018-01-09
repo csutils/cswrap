@@ -109,5 +109,9 @@ done
 export CSWRAP_TIMEOUT_FOR="clang++:clang:cppcheck"
 cc-slow sleep 2 || exit 1
 
+# XXX: if $CSWRAP_TIMEOUT_FOR is set, clang times out only if --analyze is used
+clang sleep 2 || exit 1
+clang --analyze sleep 2 && exit 1
+
 # all OK
 exit 0
