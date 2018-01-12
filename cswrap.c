@@ -171,7 +171,6 @@ bool lock_cap_file(void)
         memset(&tm, 0, sizeof tm);
         localtime_r(&t_end, &tm);
         warn("%04d-%02d-%02d %02d:%02d:%02d %s %s",
-                /* self */ prog_name,
                 /* date */ tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
                 /* time */ tm.tm_hour, tm.tm_min, tm.tm_sec,
                 "still trying to lock", cap_file_lock_name);
