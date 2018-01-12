@@ -964,11 +964,11 @@ int main(int argc, char *argv[])
                 break;
             }
 
-            tag_process_name("[cswrap] ", argc, argv);
-
             status = install_timeout_handler(base_name, argv);
             if (EXIT_SUCCESS != status)
                 break;
+
+            tag_process_name("[cswrap] ", argc, argv);
 
             /* check whether we should capture diagnostic messages to a file */
             init_cap_file_name();
