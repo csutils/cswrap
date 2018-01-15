@@ -20,7 +20,7 @@ CTEST ?= ctest
 
 .PHONY: all check clean distclean distcheck install
 
-# define $(space) as " " to bude used in $(subst ...)
+# define $(space) as " " to be used in $(subst ...)
 space :=
 space +=
 
