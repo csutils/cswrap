@@ -478,6 +478,10 @@ bool find_conftest_in_args(char **argv)
         /* used by waf */
         if (STREQ(arg, "../test.c"))
             return true;
+
+        /* used by qemu-guest-agent */
+        if (STREQ(arg, "config-temp/qemu-conf.c"))
+            return true;
     }
 
     return false;
