@@ -18,6 +18,8 @@
 CMAKE ?= cmake
 CTEST ?= ctest
 
+CMAKE_BUILD_TYPE ?= RelWithDebInfo
+
 .PHONY: all check clean distclean distcheck install
 
 # define $(space) as " " to be used in $(subst ...)
@@ -29,7 +31,9 @@ CTEST_CMD = $(subst $(space),;,$(CTEST) --output-on-failure)
 
 all:
 	mkdir -p cswrap_build
-	cd cswrap_build && $(CMAKE) -DCMAKE_CTEST_COMMAND="$(CTEST_CMD)" ..
+	cd cswrap_build && $(CMAKE) \
+		-DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" \
+		-DCMAKE_CTEST_COMMAND="$(CTEST_CMD)" ..
 	$(MAKE) -C cswrap_build
 
 check: all
