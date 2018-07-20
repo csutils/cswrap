@@ -134,7 +134,7 @@ cd cswrap_build
 make install DESTDIR="\$RPM_BUILD_ROOT"
 
 install -m0755 -d "\$RPM_BUILD_ROOT%{_libdir}"{,/cswrap}
-for i in c++ cc g++ gcc clang clang++ cppcheck \\
+for i in c++ cc g++ gcc clang clang++ cppcheck smatch \\
     %{_arch}-redhat-linux-c++ \\
     %{_arch}-redhat-linux-g++ \\
     %{_arch}-redhat-linux-gcc

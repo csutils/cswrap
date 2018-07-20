@@ -955,6 +955,15 @@ int main(int argc, char *argv[])
                 status = fail("unable to redirect stderr: %s", strerror(errno));
                 break;
             }
+
+            if (STREQ(base_name, "smatch")
+                    /* smatch writes diagnostic messages to stdout */
+                    && -1 == dup2(pipefd[/* wr */ 1], STDOUT_FILENO))
+            {
+                status = fail("unable to redirect stdout: %s", strerror(errno));
+                break;
+            }
+
             execv(exec_path, argv_dup);
             status = fail("execv() failed: %s", strerror(errno));
             break;
