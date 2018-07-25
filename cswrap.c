@@ -67,6 +67,8 @@ static int suppress_plain_lines;
 
 static struct strlist *file_list;
 
+static volatile sig_atomic_t use_pg;
+
 /* print a warning/error message */
 static void print_msg(const char *what, const char *fmt, va_list ap)
 {
@@ -587,14 +589,20 @@ bool translate_line(char *buf, const char *tool)
         return false;
     }
 
-    if (-1 == access(buf, R_OK)) {
+    char *abs_path = NULL;
+    if (/* clang */ use_pg && STREQ(buf, "<scratch space>"))
+        /* clang uses <scratch space> as a placeholder for path in note msgs */
+        abs_path = strdup(buf);
+
+    if (!abs_path && (-1 == access(buf, R_OK))) {
         /* the part up to the colon does not specify a file we can access */
         *colon = ':';
         return false;
     }
 
     /* canonicalize the file name and restore the previously replaced colon */
-    char *abs_path = canonicalize_file_name(buf);
+    if (!abs_path)
+        abs_path = canonicalize_file_name(buf);
     if (!abs_path && (ENOENT == errno) && (0 == access(buf, R_OK)))
         /* work around glibc/valgrind bug that causes realpath() to occasionally
          * fail with ENOENT for no reason */
@@ -651,7 +659,6 @@ void trans_paths_to_abs(const char *tool)
 }
 
 static volatile pid_t tool_pid;
-static volatile sig_atomic_t use_pg;
 static volatile sig_atomic_t timed_out;
 
 void signal_handler(int signum)

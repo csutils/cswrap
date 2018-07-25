@@ -107,3 +107,22 @@ src/files.c:498:5: note: Taking true branch
 src/files.c:499:2: note: Function call argument is an uninitialized value
 #        read_file(f, rc, realname, undoable, new_buffer);
 #        ^         ~
+
+src/files.c:427:37: warning: The left operand of '+' is a garbage value
+    float min_cost = (posdata->cost + ZopfliCostModelGetMinCostCmd(model) +
+                                    ^
+src/files.c:458:30: note: expanded from macro 'BROTLI_MIN'
+#define BROTLI_MIN(T, A, B) (brotli_min_ ## T((A), (B)))
+                             ^~~~~~~~~~~~~~~~~~~~~~~~~~
+<scratch space>:188:1: note: expanded from here
+brotli_min_size_t
+^
+src/files.c:415:33: note: Calling 'MaxZopfliLen'
+  const size_t max_zopfli_len = MaxZopfliLen(params);
+                                ^~~~~~~~~~~~~~~~~~~~
+src/files.c:48:10: note: '?' condition is false
+  return params->quality <= 10 ?
+         ^
+src/files.c:415:33: note: Returning from 'MaxZopfliLen'
+  const size_t max_zopfli_len = MaxZopfliLen(params);
+                                ^~~~~~~~~~~~~~~~~~~~

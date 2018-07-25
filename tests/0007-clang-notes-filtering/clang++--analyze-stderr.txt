@@ -22,3 +22,7 @@ src/browser.c:269:20: warning: comparison between signed and unsigned integer ex
 src/files.c:499:2: warning: Function call argument is an uninitialized value <--[clang++]
 #        read_file(f, rc, realname, undoable, new_buffer);
 #        ^         ~
+
+src/files.c:427:37: warning: The left operand of '+' is a garbage value <--[clang++]
+    float min_cost = (posdata->cost + ZopfliCostModelGetMinCostCmd(model) +
+                                    ^
