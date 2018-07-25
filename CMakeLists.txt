@@ -50,7 +50,7 @@ foreach(runtest ${runtests})
     get_filename_component(test_src_dir "${runtest}" PATH)
     get_filename_component(test_name "${test_src_dir}" NAME)
 
-    # for each of them run: runtest.sh PATH_TO_CSWRAP TEST_DST_DIR TEST_SRC_DIR
+    # for each of them run: runtest.sh TEST_SRC_DIR TEST_DST_DIR PATH_TO_CSWRAP
     add_test("${test_name}" "${runtest}" "${test_src_dir}"
         "${CMAKE_CURRENT_BINARY_DIR}/tests/${test_name}/"
         "${CMAKE_CURRENT_BINARY_DIR}/cswrap")

@@ -562,7 +562,7 @@ void write_out(
 }
 
 /* translate one line of a diagnostic message if an input file is matched */
-bool translate_line(char *buf, const char *exclude)
+bool translate_line(char *buf, const char *tool)
 {
     char *const buf_orig = buf;
     struct str_item *item;
@@ -581,7 +581,7 @@ bool translate_line(char *buf, const char *exclude)
     /* temporarily replace the colon by zero */
     *colon = '\0';
 
-    if (STREQ(buf, exclude)) {
+    if (STREQ(buf, tool)) {
         /* explicitly excluded, skip this! */
         *colon = ':';
         return false;
@@ -609,22 +609,22 @@ bool translate_line(char *buf, const char *exclude)
         suppress_plain_lines = 2;
     else {
         /* write the translated message to stderr */
-        write_out(stderr, buf_orig, buf, abs_path, colon, /* tool */ exclude);
+        write_out(stderr, buf_orig, buf, abs_path, colon, tool);
         suppress_plain_lines = 0;
     }
 
     if (init_cap_file_once())
         /* write the message also to capture file if the feature is enabled */
-        write_out(cap_file, buf_orig, buf, abs_path, colon, /* tool */ exclude);
+        write_out(cap_file, buf_orig, buf, abs_path, colon, tool);
 
     free(abs_path);
     return true;
 }
 
 /* per-line handler of trans_paths_to_abs() */
-void handle_line(char *buf, const char *exclude)
+void handle_line(char *buf, const char *tool)
 {
-    if (translate_line(buf, exclude))
+    if (translate_line(buf, tool))
         return;
 
     if (0 < suppress_plain_lines)
@@ -638,13 +638,13 @@ void handle_line(char *buf, const char *exclude)
 }
 
 /* canonicalize paths the lines from stdin start with, write them to stderr */
-void trans_paths_to_abs(const char *exclude)
+void trans_paths_to_abs(const char *tool)
 {
     /* handle the input from stdin line by line */
     char *buf = NULL;
     size_t buf_size = 0;
     while (0 < getline(&buf, &buf_size, stdin))
-        handle_line(buf, exclude);
+        handle_line(buf, tool);
 
     /* release line buffer */
     free(buf);
@@ -985,7 +985,7 @@ int main(int argc, char *argv[])
             /* check whether we should capture diagnostic messages to a file */
             init_cap_file_name();
 
-            trans_paths_to_abs(/* exclude */ base_name);
+            trans_paths_to_abs(/* tool */ base_name);
 
             /* wait for the child to exit */
             while (-1 == wait(&status)) {
