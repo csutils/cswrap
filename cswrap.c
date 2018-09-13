@@ -484,6 +484,13 @@ bool find_conftest_in_args(char **argv)
         /* used by qemu-guest-agent */
         if (STREQ(arg, "config-temp/qemu-conf.c"))
             return true;
+
+        /* try.c in UU/ - used by perl-5.26.2 */
+        if (STREQ(arg, "try.c")) {
+            char cwd[PATH_MAX];
+            if (getcwd(cwd, sizeof cwd) && STREQ("UU", basename(cwd)))
+                return true;
+        }
     }
 
     return false;
