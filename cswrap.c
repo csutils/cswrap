@@ -978,6 +978,9 @@ int main(int argc, char *argv[])
                 break;
             }
 
+            /* once duplicated, no longer needed */
+            close(pipefd[/* wr */ 1]);
+
             execv(exec_path, argv_dup);
             status = fail("execv() failed: %s", strerror(errno));
             break;
@@ -989,6 +992,9 @@ int main(int argc, char *argv[])
                 status = fail("unable to redirect stdin: %s", strerror(errno));
                 break;
             }
+
+            /* once duplicated, no longer needed */
+            close(pipefd[/* rd */ 0]);
 
             status = install_timeout_handler(base_name, argv);
             if (EXIT_SUCCESS != status)
