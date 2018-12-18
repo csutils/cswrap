@@ -44,6 +44,8 @@
 #include <time.h>            /* for time() */
 #include <unistd.h>
 
+#define MATCH_PREFIX(str, pref) (!strncmp(str, pref, sizeof(pref) - 1U))
+
 #ifdef PATH_TO_WRAP
 const char *path_to_wrap = PATH_TO_WRAP;
 #else
@@ -485,6 +487,10 @@ bool find_conftest_in_args(char **argv)
         if (STREQ(arg, "config-temp/qemu-conf.c"))
             return true;
 
+        /* used by cov-build on first invocation of CC/CXX */
+        if (MATCH_PREFIX(arg, "/tmp/cov-mockbuild/"))
+            return true;
+
         /* try.c in UU/ - used by perl-5.26.2 */
         if (STREQ(arg, "try.c")) {
             char cwd[PATH_MAX];
@@ -517,10 +523,8 @@ bool clang_analyzer_note(const char *msg)
         if (':' == c || isdigit(c))
             continue;
 
-        if (' ' == c) {
-            static const char note_prefix[] = " note: ";
-            return !strncmp(msg, note_prefix, sizeof(note_prefix) - 1U);
-        }
+        if (' ' == c)
+            return MATCH_PREFIX(msg, " note: ");
     }
 
     return false;
