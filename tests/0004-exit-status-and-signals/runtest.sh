@@ -63,7 +63,7 @@ rm -f cc-slow.pid
 # kill the wrapper, which should forward the signal to the compiler
 not-clang sleep 64 csdiff.cc 2>cc-slow.out &
 pid="$!"
-while sleep .1; do
+while sleep 1; do
     kill "$pid" && break
 done
 wait "$pid"
@@ -78,7 +78,7 @@ rm -f cc-slow.pid
 # kill the wrapper of clang, which should kill its process group
 clang sleep 64 main.cpp 2>clang.out &
 pid="$!"
-while sleep .1; do
+while sleep 1; do
     kill "$pid" && break
 done
 wait "$pid"
