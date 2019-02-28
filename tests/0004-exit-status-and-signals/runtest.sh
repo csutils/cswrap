@@ -58,6 +58,7 @@ wait "$pid" || exit 1
 grep '^cswrap: error: child .* terminated by signal 15$' cc-slow.out || exit 1
 grep '^.*/cscppc.c: internal warning: child .* by signal 15 <--\[cc-slow\]$' \
     cc-slow.out || exit 1
+rm -f cc-slow.pid
 
 # kill the wrapper, which should forward the signal to the compiler
 not-clang sleep 64 csdiff.cc 2>cc-slow.out &
@@ -72,6 +73,7 @@ grep '^csdiff.cc: internal warning: child.* terminated by signal 15$' \
     cc-slow.out || exit 1
 sleep 1
 kill "$(<cc-slow.pid)" || exit 1
+rm -f cc-slow.pid
 
 # kill the wrapper of clang, which should kill its process group
 clang sleep 64 main.cpp 2>clang.out &
@@ -86,6 +88,7 @@ grep '^main.cpp: internal warning: child .* terminated by signal 15$' \
     clang.out || exit 1
 sleep 1
 kill "$(<cc-slow.pid)" && exit 1
+rm -f cc-slow.pid
 
 # set a timeout using the wrapper
 export CSWRAP_TIMEOUT=1
@@ -104,6 +107,7 @@ for i in "" cc-slow foo:cc-slow:bar :::cc-slow:::; do
     pid="$(<cc-slow.pid)"
     test 0 -lt "$pid" || exit 1
     kill "$pid" 2>/dev/null && exit 1
+    rm -f cc-slow.pid
 done
 
 export CSWRAP_TIMEOUT_FOR="clang++:clang:cppcheck"
