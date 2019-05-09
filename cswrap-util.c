@@ -112,6 +112,10 @@ bool is_black_listed_file(const char *name)
     if (STREQ(name, "conftest.c"))
         return true;
 
+    /* used by cmake */
+    if (strstr(name, "/CMakeTmp/"))
+        return true;
+
     /* used by waf */
     if (STREQ(name, "../test.c") || strstr(name, ".conf_check_"))
         return true;
