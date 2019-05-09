@@ -117,7 +117,7 @@ bool is_black_listed_file(const char *name)
         return true;
 
     /* used by waf */
-    if (STREQ(name, "../test.c") || strstr(name, ".conf_check_"))
+    if (STREQ(name, "../test.c") || STREQ(name, "../../test.c"))
         return true;
 
     /* used by numpy */
@@ -136,6 +136,15 @@ bool is_black_listed_file(const char *name)
     if (STREQ(name, "try.c")) {
         char cwd[PATH_MAX];
         if (getcwd(cwd, sizeof cwd) && STREQ("UU", basename(cwd)))
+            return true;
+    }
+
+    /* .conf_check_.../... used by libldb-1.5.4 */
+    if (STREQ(name, "test.c.1.o") || STREQ(name, "../../main.c")) {
+        char *abs_path = canonicalize_file_name(name);
+        const bool matched = abs_path && strstr(abs_path, ".conf_check_");
+        free(abs_path);
+        if (matched)
             return true;
     }
 
