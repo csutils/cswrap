@@ -480,7 +480,7 @@ bool find_conftest_in_args(char **argv)
             return true;
 
         /* used by waf */
-        if (STREQ(arg, "../test.c"))
+        if (STREQ(arg, "../test.c") || strstr(arg, ".conf_check_"))
             return true;
 
         /* used by qemu-guest-agent */
