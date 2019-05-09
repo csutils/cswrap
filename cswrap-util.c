@@ -116,6 +116,10 @@ bool is_black_listed_file(const char *name)
     if (STREQ(name, "../test.c") || strstr(name, ".conf_check_"))
         return true;
 
+    /* used by numpy */
+    if (STREQ(name, "_configtest.c"))
+        return true;
+
     /* used by qemu-guest-agent */
     if (STREQ(name, "config-temp/qemu-conf.c"))
         return true;
