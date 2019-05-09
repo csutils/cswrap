@@ -21,9 +21,11 @@
 
 #include "cswrap-util.h"
 
+#include <limits.h>                 /* for PATH_MAX */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>                 /* for getcwd() */
 
 void tag_process_name(const char *prefix, const int argc, char *argv[])
 {
@@ -104,3 +106,31 @@ bool remove_self_from_path(const char *tool, char *path, const char *wrap)
     return found;
 }
 
+bool is_black_listed_file(const char *name)
+{
+    /* used by autoconf */
+    if (STREQ(name, "conftest.c"))
+        return true;
+
+    /* used by waf */
+    if (STREQ(name, "../test.c") || strstr(name, ".conf_check_"))
+        return true;
+
+    /* used by qemu-guest-agent */
+    if (STREQ(name, "config-temp/qemu-conf.c"))
+        return true;
+
+    /* used by cov-build on first invocation of CC/CXX */
+    if (MATCH_PREFIX(name, "/tmp/cov-mockbuild/"))
+        return true;
+
+    /* try.c in UU/ - used by perl-5.26.2 */
+    if (STREQ(name, "try.c")) {
+        char cwd[PATH_MAX];
+        if (getcwd(cwd, sizeof cwd) && STREQ("UU", basename(cwd)))
+            return true;
+    }
+
+    /* no match */
+    return false;
+}

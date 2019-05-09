@@ -44,8 +44,6 @@
 #include <time.h>            /* for time() */
 #include <unistd.h>
 
-#define MATCH_PREFIX(str, pref) (!strncmp(str, pref, sizeof(pref) - 1U))
-
 #ifdef PATH_TO_WRAP
 const char *path_to_wrap = PATH_TO_WRAP;
 #else
@@ -472,32 +470,9 @@ bool translate_args(char ***pargv, const char *base_name)
 /* return true if cmd-line args suggest we are called by a configure script */
 bool find_conftest_in_args(char **argv)
 {
-    for (; *argv; ++argv) {
-        const char *arg = *argv;
-
-        /* used by autoconf */
-        if (STREQ(arg, "conftest.c"))
+    for (; *argv; ++argv)
+        if (is_black_listed_file(*argv))
             return true;
-
-        /* used by waf */
-        if (STREQ(arg, "../test.c") || strstr(arg, ".conf_check_"))
-            return true;
-
-        /* used by qemu-guest-agent */
-        if (STREQ(arg, "config-temp/qemu-conf.c"))
-            return true;
-
-        /* used by cov-build on first invocation of CC/CXX */
-        if (MATCH_PREFIX(arg, "/tmp/cov-mockbuild/"))
-            return true;
-
-        /* try.c in UU/ - used by perl-5.26.2 */
-        if (STREQ(arg, "try.c")) {
-            char cwd[PATH_MAX];
-            if (getcwd(cwd, sizeof cwd) && STREQ("UU", basename(cwd)))
-                return true;
-        }
-    }
 
     return false;
 }

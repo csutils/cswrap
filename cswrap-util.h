@@ -24,10 +24,15 @@
 
 #define STREQ(a, b) (!strcmp(a, b))
 
+#define MATCH_PREFIX(str, pref) (!strncmp(str, pref, sizeof(pref) - 1U))
+
 /* insert PREFIX at the begin ARGC/ARGV array to appear in process listing */
 void tag_process_name(const char *prefix, const int argc, char *argv[]);
 
 /* remove all $PATH items where TOOL can be found after symlink dereference */
 bool remove_self_from_path(const char *tool, char *path, const char *wrap);
+
+/* return true if the given name of an input file is black-listed */
+bool is_black_listed_file(const char *name);
 
 #endif /* CSWRAP_UTIL_H */
