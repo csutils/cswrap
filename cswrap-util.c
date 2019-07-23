@@ -139,6 +139,18 @@ bool is_black_listed_file(const char *name)
             return true;
     }
 
+    /* /config/auto-aux/... used by ocaml-4.07.0-4.el8 */
+    if (STREQ(name, "async_io.c")
+            || STREQ(name, "getgroups.c")
+            || STREQ(name, "gethostbyaddr.c")
+            || STREQ(name, "gethostbyname.c")
+            || STREQ(name, "hasgot.c"))
+    {
+        char cwd[PATH_MAX];
+        if (getcwd(cwd, sizeof cwd) && strstr(cwd, "/config/auto-aux"))
+            return true;
+    }
+
     /* .conf_check_.../... used by libldb-1.5.4 */
     if (STREQ(name, "test.c.1.o") || STREQ(name, "../../main.c")) {
         char *abs_path = canonicalize_file_name(name);
