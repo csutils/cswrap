@@ -128,6 +128,11 @@ bool is_black_listed_file(const char *name)
     if (STREQ(name, "config-temp/qemu-conf.c"))
         return true;
 
+    /* used by kernel */
+    if (STREQ(name, "scripts/kconfig/conf.c")
+            || STREQ(name, "scripts/kconfig/zconf.tab.c"))
+        return true;
+
     /* used by cov-build on first invocation of CC/CXX */
     if (MATCH_PREFIX(name, "/tmp/cov-mockbuild/"))
         return true;
