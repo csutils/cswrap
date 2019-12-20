@@ -109,7 +109,7 @@ bool remove_self_from_path(const char *tool, char *path, const char *wrap)
 bool is_black_listed_file(const char *name)
 {
     /* used by autoconf */
-    if (STREQ(name, "conftest.c"))
+    if (STREQ(name, "conftest.c") || STREQ(name, "conftest.adb"))
         return true;
 
     /* used by cmake */
