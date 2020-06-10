@@ -477,11 +477,11 @@ bool find_conftest_in_args(char **argv)
     return false;
 }
 
-/* return true if there is a cmd-line argument equal to "--analyze" */
-bool find_analyze_in_args(char **argv)
+/* return true if there is a cmd-line argument equal to seek_arg */
+bool seek_for_arg(const char *seek_arg, char **argv)
 {
     for (; *argv; ++argv)
-        if (STREQ(*argv, "--analyze"))
+        if (STREQ(*argv, seek_arg))
             return true;
 
     return false;
@@ -712,10 +712,7 @@ bool timeout_disabled_for(const char *base_name, char *argv[])
          * clang++, do not set the timeout unless it runs as the analyzer.
          * Otherwise, we could unintententionally kill compiler or linker.
          * FIXME: Implement the timeout in cscppc/csclng instead. */
-        for (; *argv; ++argv)
-            if (STREQ(*argv, "--analyze"))
-                break;
-        if (!*argv)
+        if (!seek_for_arg("--analyze", argv))
             /* --analyze not found in argv[] --> assume compiler/linker */
             return true;
     }
@@ -906,7 +903,7 @@ int main(int argc, char *argv[])
         || STREQ(base_name, "clang++");
     if (use_pg)
         /* check whether clang is ivoked with --analyze */
-        clang_analyzer = find_analyze_in_args(argv);
+        clang_analyzer = seek_for_arg("--analyze", argv);
 
     /* collect all input file names and create a list of them */
     collect_file_list(argv);
