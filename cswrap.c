@@ -717,6 +717,13 @@ bool timeout_disabled_for(const char *base_name, char *argv[])
             return true;
     }
 
+    if (STREQ(base_name, "gcc") && !seek_for_arg("-fanalyzer", argv))
+        /* CSWRAP_TIMEOUT_FOR="gcc" in fact means "gcc -fanalyzer" because
+         * we almost never want to kill the gcc compiler itself (and if we
+         * really wanted to, we would unset CSWRAP_TIMEOUT_FOR to override
+         * this quirk). */
+        return true;
+
     const size_t len = strlen(base_name);
 
     /* go through colon-separated list of programs in $CSWRAP_TIMEOUT_FOR */
