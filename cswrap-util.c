@@ -46,6 +46,7 @@ void tag_process_name(const char *prefix, const int argc, char *argv[])
     memcpy(beg, prefix, prefix_len);
 }
 
+/* return true if something was found/removed from path */
 bool remove_self_from_path(const char *tool, char *path, const char *wrap)
 {
     if (!path)
@@ -71,7 +72,7 @@ bool remove_self_from_path(const char *tool, char *path, const char *wrap)
             raw_path = NULL;
         if (!raw_path)
             /* OOM */
-            return false;
+            abort();
 
         /* compare the canonicalized basename with wrapper_name */
         char *exec_path = canonicalize_file_name(raw_path);
