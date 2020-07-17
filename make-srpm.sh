@@ -143,6 +143,9 @@ do
 done
 
 %files
+%ifarch x86_64
+%{_bindir}/csexec
+%endif
 %{_bindir}/cswrap
 %{_libdir}/cswrap
 %{_mandir}/man1/%{name}.1*

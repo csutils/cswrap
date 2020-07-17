@@ -32,6 +32,14 @@ if(CMAKE_USE_PTHREADS_INIT)
 endif()
 install(TARGETS cswrap DESTINATION bin)
 
+# build csexec only if supported by target (=host) architecture
+message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+    message(STATUS "csexec for x86_64 will be built")
+    add_executable(csexec csexec.c)
+    install(TARGETS csexec DESTINATION bin)
+endif()
+
 # build and install the man page (if asciidoc is available)
 find_program(A2X a2x)
 if(A2X)
