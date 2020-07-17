@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with cswrap.  If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 2.8)
+# using VERSION 3.3 or lower here causes cmake to link with -rdynamic
+cmake_minimum_required(VERSION 3.4)
 project(cswrap C)
 enable_testing()
 
@@ -32,12 +33,30 @@ if(CMAKE_USE_PTHREADS_INIT)
 endif()
 install(TARGETS cswrap DESTINATION bin)
 
+# build C unit with manually specified compiler/linker flags
+macro(build_custom_target dst src flags)
+    set(cmd ${CMAKE_C_COMPILER} ${flags} -o
+        ${CMAKE_CURRENT_BINARY_DIR}/${dst}
+        ${CMAKE_CURRENT_SOURCE_DIR}/${src})
+    string(REPLACE ";" " " flags_string "${flags}")
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dst}
+        COMMAND ${cmd}
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${src}
+        COMMENT "Building ${dst} with flags: ${flags_string}")
+    add_custom_target(${dst}-target ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${dst})
+    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${dst} DESTINATION bin)
+endmacro()
+
 # build csexec only if supported by target (=host) architecture
 message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     message(STATUS "csexec for x86_64 will be built")
     add_executable(csexec csexec.c)
     install(TARGETS csexec DESTINATION bin)
+
+    # csexec-loader (custom ELF interpreter) does not use any C run-time libs
+    set(loader_flags -Wall -Wextra -g -O2 -fPIC -shared -nostdlib)
+    build_custom_target(csexec-loader csexec-loader.c "${loader_flags}")
 endif()
 
 # build and install the man page (if asciidoc is available)

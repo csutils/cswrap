@@ -9,7 +9,7 @@ before_install:
     - sudo apt-get update -qq
 
 install:
-    - sudo apt-get install cmake valgrind
+    - sudo apt-get install cmake3 valgrind
     - sudo apt-get install -y --force-yes csbuild
 
 script:

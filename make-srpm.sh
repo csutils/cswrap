@@ -145,6 +145,7 @@ done
 %files
 %ifarch x86_64
 %{_bindir}/csexec
+%{_bindir}/csexec-loader
 %endif
 %{_bindir}/cswrap
 %{_libdir}/cswrap

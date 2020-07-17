@@ -21,6 +21,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <libgen.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -109,6 +110,12 @@ int main(int argc, char *argv[])
     // we require at least EXECFN (given as ARG0) and ARG0 (given as ARG1)
     if (argc < 2) {
         fprintf(stderr, "csexec: error: insufficient count of arguments\n");
+        return /* command not executable */ 0x7E;
+    }
+
+    // if csexec-loader is invoked directly, do not pass it to LD_LINUX_SO
+    if (!strcmp("csexec-loader", basename(argv[0]))) {
+        fprintf(stderr, "csexec: error: refusing to execute %s\n", argv[0]);
         return /* command not executable */ 0x7E;
     }
 
