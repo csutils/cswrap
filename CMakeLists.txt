@@ -22,13 +22,14 @@ enable_testing()
 # initialize pthreads
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
-if(CMAKE_USE_PTHREADS_INIT)
-    add_definitions("-pthread")
-endif()
+add_definitions("-std=c99")
 
 # compile the executable, link with pthreads, and install
 add_executable(cswrap cswrap.c cswrap-util.c)
 target_link_libraries(cswrap ${CMAKE_THREAD_LIBS_INIT})
+if(CMAKE_USE_PTHREADS_INIT)
+    set_target_properties(cswrap PROPERTIES COMPILE_FLAGS "-pthread")
+endif()
 install(TARGETS cswrap DESTINATION bin)
 
 # build and install the man page (if asciidoc is available)
