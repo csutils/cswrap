@@ -23,8 +23,7 @@ CMAKE_BUILD_TYPE ?= RelWithDebInfo
 .PHONY: all check clean distclean distcheck install
 
 # define $(space) as " " to be used in $(subst ...)
-space :=
-space +=
+space := $(subst ,, )
 
 # generate ;-sepearated $(CTEST_CMD)
 CTEST_CMD = $(subst $(space),;,$(CTEST) --output-on-failure)
