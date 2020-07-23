@@ -122,7 +122,7 @@ mkdir cswrap_build
 cd cswrap_build
 export CFLAGS="\$RPM_OPT_FLAGS"' -DPATH_TO_WRAP=\\"%{_libdir}/cswrap\\"'
 export LDFLAGS="\$RPM_OPT_FLAGS -static -pthread"
-%cmake ..
+%cmake .. -B.
 make %{?_smp_mflags} VERBOSE=yes
 
 %check
