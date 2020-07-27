@@ -54,6 +54,29 @@ if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     add_executable(csexec csexec.c)
     install(TARGETS csexec DESTINATION bin)
 
+    # check whether /lib64/ld-linux-x86-64.so.2 takes --argv0, introduced with:
+    # https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=c6702789
+    set(cmd "/lib64/ld-linux-x86-64.so.2 --argv0 XXX")
+    set(cmd "${cmd} /usr/sbin/iconvconfig --usage")
+    set(cmd "${cmd} | grep 'Usage: XXX' > /dev/null")
+    execute_process(COMMAND sh -c "${cmd}"
+        RESULT_VARIABLE LD_ARGV0_RESULT
+        ERROR_QUIET)
+    if("${LD_ARGV0_RESULT}" EQUAL 0)
+        message(STATUS "/lib64/ld-linux-x86-64.so.2 takes --argv0")
+        set(LD_ARGV0 ON)
+    else()
+        message(STATUS "/lib64/ld-linux-x86-64.so.2 does NOT take --argv0")
+        set(LD_ARGV0 OFF)
+    endif()
+    option(LD_LINUX_SO_TAKES_ARGV0
+        "Set to ON if ld-linux.so takes --argv0"
+        "${LD_ARGV0}")
+    if(${LD_LINUX_SO_TAKES_ARGV0})
+        set_target_properties(csexec PROPERTIES
+            COMPILE_FLAGS "-DLD_LINUX_SO_TAKES_ARGV0")
+    endif()
+
     # csexec-loader (custom ELF interpreter) does not use any C run-time libs
     set(loader_flags -Wall -Wextra -g -O2 -fPIC -shared -nostdlib)
     build_custom_target(csexec-loader csexec-loader.c "${loader_flags}")
