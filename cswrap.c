@@ -911,6 +911,9 @@ int main(int argc, char *argv[])
     if (use_pg)
         /* check whether clang is ivoked with --analyze */
         clang_analyzer = seek_for_arg("--analyze", argv);
+    else
+        /* `gcc -fanalyzer` also seems to be difficult to kill on timeout */
+        use_pg = seek_for_arg("-fanalyzer", argv);
 
     /* collect all input file names and create a list of them */
     collect_file_list(argv);
