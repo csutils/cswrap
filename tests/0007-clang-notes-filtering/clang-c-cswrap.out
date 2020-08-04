@@ -114,7 +114,7 @@ src/files.c:427:37: warning: The left operand of '+' is a garbage value <--[clan
 src/files.c:458:30: note: expanded from macro 'BROTLI_MIN' <--[clang]
 #define BROTLI_MIN(T, A, B) (brotli_min_ ## T((A), (B)))
                              ^~~~~~~~~~~~~~~~~~~~~~~~~~
-<scratch space>:188:1: note: expanded from here <--[clang]
+<scratch space>:188:1: note: expanded from here
 brotli_min_size_t
 ^
 src/files.c:415:33: note: Calling 'MaxZopfliLen' <--[clang]

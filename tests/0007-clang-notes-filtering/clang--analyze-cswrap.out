@@ -1,1 +1,128 @@
-clang-c-cswrap.out
+src/browser.c:87:13: warning: The left operand of '!=' is a garbage value <--[clang]
+#    if (dir != NULL) {
+#        ~~~ ^
+src/browser.c:57:5: note: 'dir' declared without an initial value <--[clang]
+#    DIR *dir;
+#    ^~~~~~~~
+src/browser.c:68:9: note: Assuming 'path' is equal to null <--[clang]
+#    if (path != NULL)
+#        ^~~~~~~~~~~~
+src/browser.c:68:5: note: Taking false branch <--[clang]
+#    if (path != NULL)
+#    ^
+src/browser.c:71:22: note: Left side of '||' is true <--[clang]
+#    if (path == NULL || dir == NULL) {
+#                     ^
+src/browser.c:74:6: note: Assuming 'filelist' is not equal to null <--[clang]
+#        if (filelist == NULL) {
+#            ^~~~~~~~~~~~~~~~
+src/browser.c:74:2: note: Taking false branch <--[clang]
+#        if (filelist == NULL) {
+#        ^
+src/browser.c:87:13: note: The left operand of '!=' is a garbage value <--[clang]
+#    if (dir != NULL) {
+#        ~~~ ^
+
+src/browser.c: scope_hint: In function ‘do_browser’ <--[clang]
+src/browser.c:196:19: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[clang]
+#      if (selected >= width)
+#                   ^~
+
+src/browser.c:202:19: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[clang]
+#      if (selected < width)
+#                   ^
+
+src/browser.c:204:24: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[clang]
+#      else if (selected < editwinrows * width)
+#                        ^
+
+src/browser.c:269:20: warning: comparison between signed and unsigned integer expressions [-Wsign-compare] <--[clang]
+#      for (i = 0; i < filelist_len; i++)
+#                    ^
+
+src/files.c:499:2: warning: Function call argument is an uninitialized value <--[clang]
+#        read_file(f, rc, realname, undoable, new_buffer);
+#        ^         ~
+src/files.c:425:24: note: Assuming 'openfile' is not equal to null <--[clang]
+#    bool new_buffer = (openfile == NULL
+#                       ^~~~~~~~~~~~~~~~
+src/files.c:425:24: note: Left side of '||' is false <--[clang]
+src/files.c:433:5: note: 'f' declared without an initial value <--[clang]
+#    FILE *f;
+#    ^~~~~~~
+src/files.c:441:5: note: Taking false branch <--[clang]
+#    if (check_operating_dir(filename, FALSE)) {
+#    ^
+src/files.c:452:5: note: Taking false branch <--[clang]
+#    if (strcmp(filename, "") != 0) {
+#    ^
+src/files.c:467:5: note: Taking false branch <--[clang]
+#    if (new_buffer) {
+#    ^
+src/files.c:488:11: note: Left side of '&&' is true <--[clang]
+#    rc = (filename[0] != '\0' && !ISSET(NOREAD_MODE)) ?
+#          ^
+src/files.c:488:10: note: '?' condition is true <--[clang]
+#    rc = (filename[0] != '\0' && !ISSET(NOREAD_MODE)) ?
+#         ^
+src/files.c:489:3: note: Calling 'open_file' <--[clang]
+#                open_file(realname, new_buffer, FALSE, &f) : -2;
+#                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/files.c:971:9: note: Assuming 'full_filename' is equal to null <--[clang]
+#    if (full_filename == NULL || (stat(full_filename, &fileinfo) == -1 &&
+#        ^~~~~~~~~~~~~~~~~~~~~
+src/files.c:971:31: note: Left side of '||' is true <--[clang]
+#    if (full_filename == NULL || (stat(full_filename, &fileinfo) == -1 &&
+#                              ^
+src/files.c:975:9: note: Calling 'stat' <--[clang]
+#    if (stat(full_filename, &fileinfo) == -1) {
+#        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/files.c:975:9: note: Returning from 'stat' <--[clang]
+#    if (stat(full_filename, &fileinfo) == -1) {
+#        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/files.c:975:5: note: Taking true branch <--[clang]
+#    if (stat(full_filename, &fileinfo) == -1) {
+#    ^
+src/files.c:981:2: note: Taking true branch <--[clang]
+#        if ((fd = open(filename, O_RDONLY)) != -1) {
+#        ^
+src/files.c:982:6: note: Taking true branch <--[clang]
+#            if (!quiet)
+#            ^
+src/files.c:489:3: note: Returning from 'open_file' <--[clang]
+#                open_file(realname, new_buffer, FALSE, &f) : -2;
+#                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/files.c:493:9: note: Left side of '&&' is true <--[clang]
+#    if (rc != -1 && new_buffer)
+#        ^
+src/files.c:493:5: note: Taking false branch <--[clang]
+#    if (rc != -1 && new_buffer)
+#    ^
+src/files.c:498:9: note: Assuming 'rc' is > 0 <--[clang]
+#    if (rc > 0) {
+#        ^~~~~~
+src/files.c:498:5: note: Taking true branch <--[clang]
+#    if (rc > 0) {
+#    ^
+src/files.c:499:2: note: Function call argument is an uninitialized value <--[clang]
+#        read_file(f, rc, realname, undoable, new_buffer);
+#        ^         ~
+
+src/files.c:427:37: warning: The left operand of '+' is a garbage value <--[clang]
+    float min_cost = (posdata->cost + ZopfliCostModelGetMinCostCmd(model) +
+                                    ^
+src/files.c:458:30: note: expanded from macro 'BROTLI_MIN' <--[clang]
+#define BROTLI_MIN(T, A, B) (brotli_min_ ## T((A), (B)))
+                             ^~~~~~~~~~~~~~~~~~~~~~~~~~
+<scratch space>:188:1: note: expanded from here <--[clang]
+brotli_min_size_t
+^
+src/files.c:415:33: note: Calling 'MaxZopfliLen' <--[clang]
+  const size_t max_zopfli_len = MaxZopfliLen(params);
+                                ^~~~~~~~~~~~~~~~~~~~
+src/files.c:48:10: note: '?' condition is false <--[clang]
+  return params->quality <= 10 ?
+         ^
+src/files.c:415:33: note: Returning from 'MaxZopfliLen' <--[clang]
+  const size_t max_zopfli_len = MaxZopfliLen(params);
+                                ^~~~~~~~~~~~~~~~~~~~

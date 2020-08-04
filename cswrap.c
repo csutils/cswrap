@@ -576,7 +576,7 @@ bool translate_line(char *buf, const char *tool)
     }
 
     char *abs_path = NULL;
-    if (/* clang */ use_pg && STREQ(buf, "<scratch space>"))
+    if (clang_analyzer && STREQ(buf, "<scratch space>"))
         /* clang uses <scratch space> as a placeholder for path in note msgs */
         abs_path = strdup(buf);
 
