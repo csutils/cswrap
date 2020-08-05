@@ -169,3 +169,15 @@ bool is_black_listed_file(const char *name)
     /* no match */
     return false;
 }
+
+/* check that the only argument is @/tmp/... */
+bool invoked_by_lto_wrapper(char **argv)
+{
+    if (!argv || !argv[0] || !argv[1])
+        return false;
+
+    if (!MATCH_PREFIX(argv[1], "@/tmp/"))
+        return false;
+
+    return !argv[2];
+}

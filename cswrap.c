@@ -899,7 +899,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    if (find_conftest_in_args(argv)) {
+    if (find_conftest_in_args(argv) || invoked_by_lto_wrapper(argv)) {
         /* do not change anything when compiling conftest.c */
         execv(exec_path, argv);
         return fail("execv() failed: %s", strerror(errno));
