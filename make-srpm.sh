@@ -90,7 +90,7 @@ Conflicts: csdiff        < 1.2.0
 Conflicts: csmock-common < 1.7.0
 
 BuildRequires: asciidoc
-BuildRequires: cmake
+BuildRequires: cmake3
 BuildRequires: gcc
 
 # The test-suite runs automatically trough valgrind if valgrind is available
@@ -122,12 +122,12 @@ mkdir cswrap_build
 cd cswrap_build
 export CFLAGS="\$RPM_OPT_FLAGS"' -DPATH_TO_WRAP=\\"%{_libdir}/cswrap\\"'
 export LDFLAGS="\$RPM_OPT_FLAGS -static -pthread"
-%cmake .. -B.
+%cmake3 .. -B.
 make %{?_smp_mflags} VERBOSE=yes
 
 %check
 cd cswrap_build
-ctest %{?_smp_mflags} --output-on-failure
+ctest3 %{?_smp_mflags} --output-on-failure
 
 %install
 cd cswrap_build
