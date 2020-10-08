@@ -33,6 +33,10 @@ if(CMAKE_USE_PTHREADS_INIT)
 endif()
 install(TARGETS cswrap DESTINATION bin)
 
+if(NOT DEFINED LIB_INSTALL_DIR)
+  set(LIB_INSTALL_DIR lib)
+endif()
+
 # build C unit with manually specified compiler/linker flags
 macro(build_custom_target dst src flags)
     set(cmd ${CMAKE_C_COMPILER} ${flags} -o
@@ -53,6 +57,12 @@ if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     message(STATUS "csexec for x86_64 will be built")
     add_executable(csexec csexec.c)
     install(TARGETS csexec DESTINATION bin)
+
+    # readlink() wrapper
+    add_library(csexec-preload SHARED csexec-preload.c)
+    set_target_properties(csexec-preload PROPERTIES LINK_FLAGS "-nostdlib")
+    target_link_libraries(csexec-preload dl)
+    install(TARGETS csexec-preload DESTINATION ${LIB_INSTALL_DIR})
 
     # check whether /lib64/ld-linux-x86-64.so.2 takes --argv0, introduced with:
     # https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=c6702789
