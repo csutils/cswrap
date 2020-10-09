@@ -104,6 +104,32 @@ static bool read_wrap_cmd(char **exec_args, int *pidx, char *wrap_cmd)
     }
 }
 
+static void handle_shebang_exec(char *argv[])
+{
+    const char *exec_fn = argv[0];
+    FILE *f = fopen(exec_fn, "r");
+    if (!f)
+        // exec_fn not readable
+        return;
+
+    char *buf;
+    bool matched = !!fscanf(f, "#! %ms ", &buf);
+    fclose(f);
+    if (!matched)
+        // exec_fn does not start with shebang
+        return;
+
+    // compare the interpreter specified with the shebang with exec_op
+    char *exec_op = argv[1];
+    matched = !strcmp(buf, exec_op);
+    free(buf);
+    if (!matched)
+        return;
+
+    // use path to the real binary as exec_fn to keep ld.so functional
+    argv[0] = exec_op;
+}
+
 // should be invoked as execve("/usr/bin/csexec", [EXECFN, ARG0, ...])
 int main(int argc, char *argv[])
 {
@@ -118,6 +144,9 @@ int main(int argc, char *argv[])
         fprintf(stderr, "csexec: error: refusing to execute %s\n", argv[0]);
         return /* command not executable */ 0x7E;
     }
+
+    // canonicalize argv[] in case we are called via shebang
+    handle_shebang_exec(argv);
 
     // compute the size of exec_args[]
     char *wrap_cmd = getenv(CSEXEC_WRAP_CMD_ENV_VAR_NAME);
