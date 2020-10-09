@@ -28,11 +28,6 @@
 #include <string.h>
 #include <unistd.h>
 
-// environment variable to read the pretended target of /proc/self/exe from
-#ifndef CSEXEC_REAL_EXE_ENV_VAR_NAME
-#   define CSEXEC_REAL_EXE_ENV_VAR_NAME "CSEXEC_REAL_EXE"
-#endif
-
 // environment variable to read wrap_cmd from
 #ifndef CSEXEC_WRAP_CMD_ENV_VAR_NAME
 #   define CSEXEC_WRAP_CMD_ENV_VAR_NAME "CSEXEC_WRAP_CMD"
@@ -152,9 +147,6 @@ int main(int argc, char *argv[])
 
     // canonicalize argv[] in case we are called via shebang
     handle_shebang_exec(argv);
-
-    // export EXECFN for libcsexec-preload.so to override /proc/self/exe
-    setenv(CSEXEC_REAL_EXE_ENV_VAR_NAME, argv[0], /* overwrite */ 1);
 
     // compute the size of exec_args[]
     char *wrap_cmd = getenv(CSEXEC_WRAP_CMD_ENV_VAR_NAME);

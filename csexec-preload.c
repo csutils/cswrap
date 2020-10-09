@@ -28,11 +28,6 @@
 #include <string.h>
 #include <unistd.h>
 
-// environment variable to read the pretended target of /proc/self/exe from
-#ifndef CSEXEC_REAL_EXE_ENV_VAR_NAME
-#   define CSEXEC_REAL_EXE_ENV_VAR_NAME "CSEXEC_REAL_EXE"
-#endif
-
 // executable of the dynamic linker (used as ELF interpreter)
 #ifndef LD_LINUX_SO
 #   define LD_LINUX_SO "/lib64/ld-linux-x86-64.so.2"
@@ -80,6 +75,66 @@ static void init_ld_so_real(void)
     free(tmp);
 }
 
+// pretended target of /proc/self/exe
+static char real_exe[0x400];
+static void init_real_exe(void)
+{
+    // open /proc/self/cmdline for reading
+    const char *cmd_line_fn = "/proc/self/cmdline";
+    FILE *cmd_line = fopen(cmd_line_fn, "r");
+    if (!cmd_line)
+        error(1, errno, "csexec-preload: failed to open %s", cmd_line_fn);
+
+    // go through NUL-delimited strings in the file
+    char *arg = NULL;
+    size_t size = 0U;
+    bool skip_arg = false;
+    bool seeking_ld_so = true;
+    for (;;) {
+        const ssize_t len = getdelim(&arg, &size, '\0', cmd_line);
+        if (len <= 0)
+            // real_exe not found
+            break;
+
+        if (seeking_ld_so) {
+            // skip everything before the first occurrence of LD_LINUX_SO,
+            // where we expect the expanded content of ${CSEXEC_WRAP_CMD}
+            seeking_ld_so = !!strcmp(LD_LINUX_SO, arg);
+            continue;
+        }
+
+        if (skip_arg) {
+            // read next arg
+            skip_arg = false;
+            continue;
+        }
+
+        if (!strcmp("--preload", arg)) {
+            // skip operand of --preload
+            skip_arg = true;
+            continue;
+        }
+
+        if (!strcmp("--argv0", arg)) {
+            // skip operand of --argv0
+            skip_arg = true;
+            continue;
+        }
+
+        if (sizeof real_exe <= (size_t) len)
+            // file name too long
+            error(1, errno, "csexec-preload: failed to parse %s", cmd_line_fn);
+
+        // copy name of the real executable and break the loop
+        strcpy(real_exe, arg);
+        break;
+    }
+
+    // final cleanup
+    free(arg);
+    fclose(cmd_line);
+}
+
 // initialize global variables on first call
 static void init_once(void) {
     if (!orig_cfn) {
@@ -87,6 +142,7 @@ static void init_once(void) {
         init_orig_cfn();
         init_orig_readlink();
         init_ld_so_real();
+        init_real_exe();
     }
 }
 
@@ -118,11 +174,6 @@ char *canonicalize_file_name(const char *path)
         // either failed or unrelated call to canonicalize_file_name()
         return rv;
 
-    // check whether we should override the return value
-    const char *real_exe = getenv(CSEXEC_REAL_EXE_ENV_VAR_NAME);
-    if (!real_exe)
-        return rv;
-
     // check whether path is something we should override
     if (!is_self_exe(path))
         return rv;
@@ -142,11 +193,6 @@ ssize_t readlink(const char *path, char *buf, size_t bufsiz)
 
     if (rv < 0 || !!strncmp(ld_so_real, buf, rv))
         // either failed or unrelated call to readlink()
-        return rv;
-
-    // check whether we should override the return value
-    const char *real_exe = getenv(CSEXEC_REAL_EXE_ENV_VAR_NAME);
-    if (!real_exe)
         return rv;
 
     // check whether path is something we should override
