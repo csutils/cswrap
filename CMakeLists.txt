@@ -60,8 +60,9 @@ if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 
     # readlink() wrapper
     add_library(csexec-preload SHARED csexec-preload.c)
+    set_target_properties(csexec-preload PROPERTIES COMPILE_FLAGS "-pthread")
     set_target_properties(csexec-preload PROPERTIES LINK_FLAGS "-nostdlib")
-    target_link_libraries(csexec-preload dl)
+    target_link_libraries(csexec-preload dl pthread)
     install(TARGETS csexec-preload DESTINATION ${LIB_INSTALL_DIR})
 
     # check whether /lib64/ld-linux-x86-64.so.2 takes --argv0, introduced with:

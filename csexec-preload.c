@@ -22,6 +22,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <error.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,6 +33,11 @@
 #ifndef LD_LINUX_SO
 #   define LD_LINUX_SO "/lib64/ld-linux-x86-64.so.2"
 #endif
+
+// if readlink() or canonicalize_file_name() is called from a multi-threaded
+// program, we need to block other threads until globals are initialized by
+// the thread that triggered the initialization
+pthread_mutex_t init_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // address of the original canonicalize_file_name()
 static char* (*orig_cfn)(const char *path);
@@ -137,6 +143,10 @@ static void init_real_exe(void)
 
 // initialize global variables on first call
 static void init_once(void) {
+    int rv = pthread_mutex_lock(&init_mutex);
+    if (rv != 0)
+        error(1, rv, "csexec-prealod: failed to lock init mutex");
+
     if (!orig_cfn) {
         // first call -> initialize global state
         init_orig_cfn();
@@ -144,6 +154,10 @@ static void init_once(void) {
         init_ld_so_real();
         init_real_exe();
     }
+
+    rv = pthread_mutex_unlock(&init_mutex);
+    if (rv != 0)
+        error(1, rv, "csexec-prealod: failed to unlock init mutex");
 }
 
 // return true if path is effectively /proc/self/exe
