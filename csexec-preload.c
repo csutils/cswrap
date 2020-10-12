@@ -39,6 +39,9 @@
 // the thread that triggered the initialization
 pthread_mutex_t init_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+// optimization to eliminate unncecessary calls to pthread_mutex_lock()
+static volatile bool init_done;
+
 // address of the original canonicalize_file_name()
 static char* (*orig_cfn)(const char *path);
 static void init_orig_cfn(void)
@@ -143,16 +146,23 @@ static void init_real_exe(void)
 
 // initialize global variables on first call
 static void init_once(void) {
+    if (init_done)
+        // already initialized
+        return;
+
     int rv = pthread_mutex_lock(&init_mutex);
     if (rv != 0)
         error(1, rv, "csexec-prealod: failed to lock init mutex");
 
-    if (!orig_cfn) {
+    if (!init_done) {
         // first call -> initialize global state
         init_orig_cfn();
         init_orig_readlink();
         init_ld_so_real();
         init_real_exe();
+
+        // no need to call pthread_mutex_lock() from now on
+        init_done = true;
     }
 
     rv = pthread_mutex_unlock(&init_mutex);
