@@ -176,8 +176,14 @@ bool invoked_by_lto_wrapper(char **argv)
     if (!argv || !argv[0] || !argv[1])
         return false;
 
-    if (!MATCH_PREFIX(argv[1], "@/tmp/"))
-        return false;
+    if (MATCH_PREFIX(argv[1], "@/tmp/"))
+        /* is @/tmp/... the only arg? */
+        return !argv[2];
 
-    return !argv[2];
+    for (; *argv; ++argv)
+        if (STREQ(*argv, "-xlto"))
+            /* -xlto found in argv[] */
+            return true;
+
+    return false;
 }

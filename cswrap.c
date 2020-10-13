@@ -45,9 +45,9 @@
 #include <unistd.h>
 
 #ifdef PATH_TO_WRAP
-const char *path_to_wrap = PATH_TO_WRAP;
+static const char path_to_wrap[] = PATH_TO_WRAP;
 #else
-const char *path_to_wrap = "";
+static const char path_to_wrap[] = "";
 #endif
 
 static const char prog_name[] = "cswrap";
@@ -899,8 +899,12 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    /* do not change anything when compiling conftest.c */
     if (find_conftest_in_args(argv) || invoked_by_lto_wrapper(argv)) {
-        /* do not change anything when compiling conftest.c */
+        if (MATCH_PREFIX(argv[0], path_to_wrap))
+            /* prevent LTO wrapper from picking cswrap again from argv[0] */
+            argv[0] = exec_path;
+
         execv(exec_path, argv);
         return fail("execv() failed: %s", strerror(errno));
     }
