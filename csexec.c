@@ -151,14 +151,11 @@ int main(int argc, char *argv[])
     // compute the size of exec_args[]
     char *wrap_cmd = getenv(CSEXEC_WRAP_CMD_ENV_VAR_NAME);
     const int wrap_argc = count_wrap_argc(wrap_cmd);
-    int exec_args_size = wrap_argc + /* LD_LINUX_SO */ 1 + /* preload */ 2;
-#if LD_LINUX_SO_TAKES_ARGV0
-    exec_args_size += /* --argv0 */ 1 + /* ARG0 */ 1;
-#endif
-    exec_args_size += argc - /* ARG0 */ 1 + /* terminator */ 1;
+    const int exec_args_size = wrap_argc + (/* LD_LINUX_SO */ 1 + 2 + 2) + argc;
 
     // allocate exec_args[] on stack
     char *exec_args[exec_args_size];
+    int exec_args_offset = 0;
     int idx_dst = 0;
 
     // start with wrap_cmd if given
@@ -167,14 +164,29 @@ int main(int argc, char *argv[])
         return /* command not executable */ 0x7E;
     }
 
-    // explicitly invoke dynamic linker
-    exec_args[idx_dst++] = (char *) LD_LINUX_SO;
-    exec_args[idx_dst++] = (char *) "--preload";
-    exec_args[idx_dst++] = (char *) "libcsexec-preload.so";
+    // file to execute with execvp()
+    const char *exec_file;
+
+    // if ${CSEXEC_WRAP_CMD} starts with "--skip-ld-linux\a",
+    // skip LD_LINUX_SO and directly run the command that follows
+    if (1 < wrap_argc && !strcmp("--skip-ld-linux", exec_args[0])) {
+        exec_file = exec_args[/* real wrap_cmd */ 1];
+        exec_args[++exec_args_offset] = argv[/* ARG0 */ 1];
+    }
+    else {
+        // explicitly invoke dynamic linker
+        exec_args[idx_dst++] = (char *) LD_LINUX_SO;
+        exec_args[idx_dst++] = (char *) "--preload";
+        exec_args[idx_dst++] = (char *) "libcsexec-preload.so";
 #if LD_LINUX_SO_TAKES_ARGV0
-    exec_args[idx_dst++] = (char *) "--argv0";
-    exec_args[idx_dst++] = argv[/* ARG0 */ 1];
+        exec_args[idx_dst++] = (char *) "--argv0";
+        exec_args[idx_dst++] = argv[/* ARG0 */ 1];
 #endif
+        // path to execute (either wrap_cmd or LD_LINUX_SO)
+        exec_file = exec_args[0];
+    }
+
+    // path to the original binary
     exec_args[idx_dst++] = argv[/* EXECFN */ 0];
 
     // shallow copy of other command-line arguments
@@ -184,15 +196,15 @@ int main(int argc, char *argv[])
 
     // terminate exec_args[]
     exec_args[idx_dst] = NULL;
-    assert(idx_dst + 1 == exec_args_size);
+    assert(idx_dst < exec_args_size);
 
-    // execute exec_args[]
-    execvp(exec_args[0], exec_args);
+    // execute exec_file passing it (exec_args[] + exec_args_offset) as argv[]
+    execvp(exec_file, exec_args + exec_args_offset);
 
     // handle failure of execvp()
     const int errno_execvp = errno;
     fprintf(stderr, "cexec: error: failed to execute: %s (%s)\n",
-            exec_args[0], strerror(errno));
+            exec_file, strerror(errno));
 
     return (ENOENT == errno_execvp)
         ? /* command not found      */ 0x7F
