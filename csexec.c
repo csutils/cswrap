@@ -50,6 +50,20 @@
 #   define LD_LINUX_SO_TAKES_ARGV0 0
 #endif
 
+// print a command prefix that can be used to invoke dynamic linker explicitly
+static int print_ld_exec_cmd(const char *argv0)
+{
+    printf("%s", LD_LINUX_SO " --preload " LIBCSEXEC_PRELOAD_SO);
+#if LD_LINUX_SO_TAKES_ARGV0
+    if (argv0)
+        printf(" --argv0 %s", argv0);
+#else
+    (void) argv0;
+#endif
+    printf("\n");
+    return EXIT_SUCCESS;
+}
+
 // count BEL-separated arguments in wrap_cmd (including the command name)
 static int count_wrap_argc(const char *wrap_cmd)
 {
@@ -150,6 +164,14 @@ int main(int argc, char *argv[])
     if (STREQ("csexec-loader", execfn_base)) {
         fprintf(stderr, "csexec: error: refusing to execute %s\n", argv[0]);
         return /* command not executable */ 0x7E;
+    }
+
+    // if csexec is invoked directly, check for options in argv[1]
+    if (STREQ("csexec", execfn_base)) {
+        const char *opt = argv[1];
+        const char *optarg = argv[2];
+        if STREQ("--print-ld-exec-cmd", opt)
+            return print_ld_exec_cmd(optarg);
     }
 
     // canonicalize argv[] in case we are called via shebang
