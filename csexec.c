@@ -50,6 +50,17 @@
 #   define LD_LINUX_SO_TAKES_ARGV0 0
 #endif
 
+static int print_help(void)
+{
+    printf("Usage:\n\
+    csexec --print-ld-exec-cmd [argv0] prints a command prefix to invoke\n\
+    dynamic linker explicitly.\n\
+    \n\
+    csexec --help prints this text to standard output.\n");
+
+    return EXIT_SUCCESS;
+}
+
 // print a command prefix that can be used to invoke dynamic linker explicitly
 static int print_ld_exec_cmd(const char *argv0)
 {
@@ -170,6 +181,10 @@ int main(int argc, char *argv[])
     if (STREQ("csexec", execfn_base)) {
         const char *opt = argv[1];
         const char *optarg = argv[2];
+
+        if STREQ("--help", opt)
+            return print_help();
+
         if STREQ("--print-ld-exec-cmd", opt)
             return print_ld_exec_cmd(optarg);
     }
