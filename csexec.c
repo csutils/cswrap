@@ -38,6 +38,10 @@
 #   define LD_LINUX_SO "/lib64/ld-linux-x86-64.so.2"
 #endif
 
+#ifndef LIBCSEXEC_PRELOAD_SO
+#   define LIBCSEXEC_PRELOAD_SO "libcsexec-preload.so"
+#endif
+
 // set to 1 if dynamic linker supports the --argv0 option, as implemented with:
 // https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=c6702789
 #ifndef LD_LINUX_SO_TAKES_ARGV0
@@ -177,7 +181,7 @@ int main(int argc, char *argv[])
         // explicitly invoke dynamic linker
         exec_args[idx_dst++] = (char *) LD_LINUX_SO;
         exec_args[idx_dst++] = (char *) "--preload";
-        exec_args[idx_dst++] = (char *) "libcsexec-preload.so";
+        exec_args[idx_dst++] = (char *) LIBCSEXEC_PRELOAD_SO;
 #if LD_LINUX_SO_TAKES_ARGV0
         exec_args[idx_dst++] = (char *) "--argv0";
         exec_args[idx_dst++] = argv[/* ARG0 */ 1];
