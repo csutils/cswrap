@@ -19,6 +19,8 @@
 
 #define _GNU_SOURCE 
 
+#include "cswrap-util.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <libgen.h>
@@ -125,7 +127,7 @@ static void handle_shebang_exec(char *argv[])
 
     // compare the interpreter specified with the shebang with exec_op
     char *exec_op = argv[1];
-    matched = !strcmp(buf, exec_op);
+    matched = STREQ(buf, exec_op);
     free(buf);
     if (!matched)
         return;
@@ -144,7 +146,8 @@ int main(int argc, char *argv[])
     }
 
     // if csexec-loader is invoked directly, do not pass it to LD_LINUX_SO
-    if (!strcmp("csexec-loader", basename(argv[0]))) {
+    const char *execfn_base = basename(argv[0]);
+    if (STREQ("csexec-loader", execfn_base)) {
         fprintf(stderr, "csexec: error: refusing to execute %s\n", argv[0]);
         return /* command not executable */ 0x7E;
     }
@@ -173,7 +176,7 @@ int main(int argc, char *argv[])
 
     // if ${CSEXEC_WRAP_CMD} starts with "--skip-ld-linux\a",
     // skip LD_LINUX_SO and directly run the command that follows
-    if (1 < wrap_argc && !strcmp("--skip-ld-linux", exec_args[0])) {
+    if (1 < wrap_argc && STREQ("--skip-ld-linux", exec_args[0])) {
         exec_file = exec_args[/* real wrap_cmd */ 1];
         exec_args[++exec_args_offset] = argv[/* ARG0 */ 1];
     }
