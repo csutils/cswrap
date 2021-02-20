@@ -26,6 +26,9 @@
 
 #define MATCH_PREFIX(str, pref) (!strncmp(str, pref, sizeof(pref) - 1U))
 
+/* delete the given argument from the argv array */
+void del_arg_from_argv(char **argv);
+
 /* insert PREFIX at the begin ARGC/ARGV array to appear in process listing */
 void tag_process_name(const char *prefix, const int argc, char *argv[]);
 

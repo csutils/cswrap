@@ -27,6 +27,14 @@
 #include <string.h>
 #include <unistd.h>                 /* for getcwd() */
 
+/* delete the given argument from the argv array */
+void del_arg_from_argv(char **argv)
+{
+    int i;
+    for (i = 0; argv[i]; ++i)
+        argv[i] = argv[i + 1];
+}
+
 void tag_process_name(const char *prefix, const int argc, char *argv[])
 {
     /* obtain bounds of the array pointed by argv[] */

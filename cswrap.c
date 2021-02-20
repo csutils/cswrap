@@ -371,14 +371,6 @@ enum flag_op {
     FO_DEL
 };
 
-/* delete an argument from the argv array */
-void del_arg(char *argv[])
-{
-    int i;
-    for (i = 0; argv[i]; ++i)
-        argv[i] = argv[i + 1];
-}
-
 /* add/del a single flag from the argv array */
 bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
 {
@@ -386,7 +378,7 @@ bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
     char **argv = *pargv;
     while (*argv) {
         if (FO_DEL == op && !fnmatch(flag, *argv, /* flags */ 0))
-            del_arg(argv);
+            del_arg_from_argv(argv);
         else {
             ++argc;
             ++argv;
