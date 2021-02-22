@@ -146,6 +146,10 @@ bool is_black_listed_file(const char *name)
     if (MATCH_PREFIX(name, "/tmp/cov-mockbuild/"))
         return true;
 
+    /* used by librdkafka-1.6.0 */
+    if (MATCH_PREFIX(name, "_mkltmp"))
+        return true;
+
     /* try.c in UU/ - used by perl-5.26.2 */
     if (STREQ(name, "try.c")) {
         char cwd[PATH_MAX];
