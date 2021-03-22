@@ -463,7 +463,7 @@ bool translate_args(char ***pargv, const char *base_name)
 bool find_conftest_in_args(char **argv)
 {
     for (; *argv; ++argv)
-        if (is_black_listed_file(*argv))
+        if (is_ignored_file(*argv))
             return true;
 
     return false;

@@ -35,8 +35,8 @@ void tag_process_name(const char *prefix, const int argc, char *argv[]);
 /* remove all $PATH items where TOOL can be found after symlink dereference */
 bool remove_self_from_path(const char *tool, char *path, const char *wrap);
 
-/* return true if the given name of an input file is black-listed */
-bool is_black_listed_file(const char *name);
+/* return true if the given input file name is ignored (e.g. autoconf test) */
+bool is_ignored_file(const char *name);
 
 /* return true if the arg vector indicates we are invoked by an LTO wrapper */
 bool invoked_by_lto_wrapper(char **argv);

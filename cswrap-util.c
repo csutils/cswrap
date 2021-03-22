@@ -115,7 +115,7 @@ bool remove_self_from_path(const char *tool, char *path, const char *wrap)
     return found;
 }
 
-bool is_black_listed_file(const char *name)
+bool is_ignored_file(const char *name)
 {
     /* used by autoconf */
     if (STREQ(name, "conftest.c") || STREQ(name, "conftest.adb"))
