@@ -125,6 +125,10 @@ bool is_ignored_file(const char *name)
     if (strstr(name, "/CMakeTmp/"))
         return true;
 
+    /* used by meson */
+    if (strstr(name, "/meson-private/"))
+        return true;
+
     /* used by waf */
     if (STREQ(name, "../test.c") || STREQ(name, "../../test.c"))
         return true;
