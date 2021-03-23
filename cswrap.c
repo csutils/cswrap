@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 Red Hat, Inc.
+ * Copyright (C) 2013-2021 Red Hat, Inc.
  *
  * This file is part of cswrap.
  *
@@ -896,6 +896,11 @@ int main(int argc, char *argv[])
         if (MATCH_PREFIX(argv[0], path_to_wrap))
             /* prevent LTO wrapper from picking cswrap again from argv[0] */
             argv[0] = exec_path;
+
+        if (STREQ(base_name, "gclang") || STREQ(base_name, "gclang++"))
+            /* prevent gllvm from creating bitcode files */
+            if (-1 == setenv("WLLVM_CONFIGURE_ONLY", "1", false))
+                return fail("putenv() failed: %s", strerror(errno));
 
         execv(exec_path, argv);
         return fail("execv() failed: %s", strerror(errno));
