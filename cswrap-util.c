@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 Red Hat, Inc.
+ * Copyright (C) 2013-2021 Red Hat, Inc.
  *
  * This file is part of cswrap.
  *
@@ -153,6 +153,13 @@ bool is_ignored_file(const char *name)
     /* used by librdkafka-1.6.0 */
     if (MATCH_PREFIX(name, "_mkltmp"))
         return true;
+
+    /* used by zlib */
+    if (MATCH_PREFIX(name, "ztest")) {
+        char cwd[PATH_MAX];
+        if (getcwd(cwd, sizeof cwd) && MATCH_PREFIX(basename(cwd), "zlib"))
+            return true;
+    }
 
     /* try.c in UU/ - used by perl-5.26.2 */
     if (STREQ(name, "try.c")) {
