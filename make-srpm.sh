@@ -1,6 +1,6 @@
-#/bin/bash
+#!/bin/bash
 
-# Copyright (C) 2013-2014 Red Hat, Inc.
+# Copyright (C) 2013-2021 Red Hat, Inc.
 #
 # This file is part of cswrap.
 #
@@ -140,6 +140,7 @@ make install DESTDIR="\$RPM_BUILD_ROOT"
 
 install -m0755 -d "\$RPM_BUILD_ROOT%{_libdir}"{,/cswrap}
 for i in c++ cc g++ gcc clang clang++ cppcheck smatch \\
+    divc++ divcc diosc++ dioscc gclang++ gclang goto-gcc \\
     %{_arch}-redhat-linux-c++ \\
     %{_arch}-redhat-linux-g++ \\
     %{_arch}-redhat-linux-gcc
