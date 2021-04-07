@@ -900,7 +900,7 @@ int main(int argc, char *argv[])
         if (STREQ(base_name, "gclang") || STREQ(base_name, "gclang++"))
             /* prevent gllvm from creating bitcode files */
             if (-1 == setenv("WLLVM_CONFIGURE_ONLY", "1", false))
-                return fail("putenv() failed: %s", strerror(errno));
+                return fail("setenv() failed: %s", strerror(errno));
 
         execv(exec_path, argv);
         return fail("execv() failed: %s", strerror(errno));
