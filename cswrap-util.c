@@ -161,6 +161,10 @@ bool is_ignored_file(const char *name)
             return true;
     }
 
+    /* config.(...)/ used by iproute */
+    if (MATCH_PREFIX(name, "config.") && strchr(name, '/'))
+        return true;
+
     /* try.c in UU/ - used by perl-5.26.2 */
     if (STREQ(name, "try.c")) {
         char cwd[PATH_MAX];
