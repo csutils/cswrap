@@ -82,11 +82,6 @@ License:    GPLv3+
 URL:        https://github.com/kdudka/%{name}
 Source0:    https://github.com/kdudka/%{name}/releases/download/%{name}-%{version}/%{name}-%{version}.tar.xz
 
-%ifarch x86_64
-# csexec (supported on x86_64 only for now) can be later moved to a subpackage
-Provides:   csexec = %{version}-%{release}
-%endif
-
 # cswrap-1.3.0+ emits internal warnings per timed out scans (used by csdiff to
 # eliminate false positivies that such a scan would otherwise cause) ==> force
 # new enough versions of the higher-level tools that will suppress them.
@@ -119,6 +114,18 @@ BuildRequires: glibc-static
 %description
 Generic compiler wrapper used by csmock to capture diagnostic messages.
 
+# csexec is available on x86_64 only for now
+%ifarch x86_64
+%package -n csexec
+Summary: Dynamic linker wrapper
+Conflicts: csexec < %{version}-%{release}
+
+%description -n csexec
+This package contains csexec - a dynamic linker wrapper.  The wrapper can
+be used to run dynamic analyzers and formal verifiers on source RPM package
+fully automatically.
+%endif
+
 %prep
 %setup -q
 
@@ -149,15 +156,18 @@ do
 done
 
 %files
-%ifarch x86_64
-%{_bindir}/csexec
-%{_bindir}/csexec-loader
-%{_libdir}/libcsexec-preload.so
-%endif
 %{_bindir}/cswrap
 %{_libdir}/cswrap
 %{_mandir}/man1/%{name}.1*
 %doc COPYING README
+
+%ifarch x86_64
+%files -n csexec
+%{_bindir}/csexec
+%{_bindir}/csexec-loader
+%{_libdir}/libcsexec-preload.so
+%doc COPYING
+%endif
 EOF
 
 rpmbuild -bs "$SPEC"                            \
