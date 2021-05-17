@@ -122,7 +122,7 @@ bool is_ignored_file(const char *name)
         return true;
 
     /* used by cmake */
-    if (strstr(name, "/CMakeTmp/"))
+    if (strstr(name, "/CMakeTmp/") || strstr(name, "CMakeFiles/cmTC_"))
         return true;
 
     /* used by meson */
