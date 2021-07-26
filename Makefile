@@ -35,7 +35,7 @@ all:
 	cd cswrap_build && $(CMAKE) \
 		-DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" \
 		-DCMAKE_CTEST_COMMAND="$(CTEST_CMD)" ..
-	$(MAKE) -C cswrap_build -j$(NUM_CPU)
+	$(MAKE) -sC cswrap_build -j$(NUM_CPU)
 
 check: all
 	cd cswrap_build && $(MAKE) check
@@ -47,7 +47,7 @@ distclean:
 	rm -rf cswrap_build
 
 distcheck: distclean
-	$(MAKE) check
+	$(MAKE) -s check
 
 install: all
 	$(MAKE) -C cswrap_build install
