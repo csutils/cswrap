@@ -1,4 +1,4 @@
-# Copyright (C) 2014 Red Hat, Inc.
+# Copyright (C) 2014 - 2021 Red Hat, Inc.
 #
 # This file is part of cswrap.
 #
@@ -94,17 +94,7 @@ if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 endif()
 
 # build and install the man page (if asciidoc is available)
-find_program(A2X a2x)
-if(A2X)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cswrap.1
-        COMMAND a2x -f manpage ${CMAKE_CURRENT_SOURCE_DIR}/cswrap.txt
-        -D ${CMAKE_CURRENT_BINARY_DIR}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cswrap.txt
-        COMMENT "Generating cswrap.1 man page...")
-    add_custom_target(doc ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cswrap.1)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cswrap.1
-        DESTINATION share/man/man1)
-endif()
+add_subdirectory(doc)
 
 # run test-cases
 file(GLOB runtests "${CMAKE_CURRENT_SOURCE_DIR}/tests/*/runtest.sh")
