@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with cswrap.  If not, see <http://www.gnu.org/licenses/>.
 
+NUM_CPU ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
+
 CMAKE ?= cmake
-CTEST ?= ctest
+CTEST ?= ctest -j$(NUM_CPU)
 
 CMAKE_BUILD_TYPE ?= RelWithDebInfo
 
@@ -33,7 +35,7 @@ all:
 	cd cswrap_build && $(CMAKE) \
 		-DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" \
 		-DCMAKE_CTEST_COMMAND="$(CTEST_CMD)" ..
-	$(MAKE) -C cswrap_build
+	$(MAKE) -C cswrap_build -j$(NUM_CPU)
 
 check: all
 	cd cswrap_build && $(MAKE) check
