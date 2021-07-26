@@ -24,7 +24,7 @@ foreach(runtest ${runtests})
     # for each of them run: runtest.sh TEST_SRC_DIR TEST_DST_DIR PATH_TO_CSWRAP
     add_test("${test_name}" "${runtest}" "${test_src_dir}"
         "${CMAKE_CURRENT_BINARY_DIR}/${test_name}/"
-        "${CMAKE_BINARY_DIR}/cswrap")
+        "${CMAKE_BINARY_DIR}/src/cswrap")
 endforeach()
 
 # provide the 'check' target of make
