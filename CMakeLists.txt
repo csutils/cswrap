@@ -97,17 +97,4 @@ endif()
 add_subdirectory(doc)
 
 # run test-cases
-file(GLOB runtests "${CMAKE_CURRENT_SOURCE_DIR}/tests/*/runtest.sh")
-foreach(runtest ${runtests})
-    get_filename_component(test_src_dir "${runtest}" PATH)
-    get_filename_component(test_name "${test_src_dir}" NAME)
-
-    # for each of them run: runtest.sh TEST_SRC_DIR TEST_DST_DIR PATH_TO_CSWRAP
-    add_test("${test_name}" "${runtest}" "${test_src_dir}"
-        "${CMAKE_CURRENT_BINARY_DIR}/tests/${test_name}/"
-        "${CMAKE_CURRENT_BINARY_DIR}/cswrap")
-endforeach()
-
-# provide the 'check' target of make
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
-add_dependencies(check cswrap)
+add_subdirectory(tests)
