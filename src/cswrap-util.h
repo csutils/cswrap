@@ -35,6 +35,9 @@ void tag_process_name(const char *prefix, const int argc, char *argv[]);
 /* remove all $PATH items where TOOL can be found after symlink dereference */
 bool remove_self_from_path(const char *tool, char *path, const char *wrap);
 
+/* return true if the given arg looks like name of an input C/C++ file */
+bool is_input_file(const char *arg, bool enable_cxx);
+
 /* return true if the given input file name is ignored (e.g. autoconf test) */
 bool is_ignored_file(const char *name);
 

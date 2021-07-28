@@ -743,16 +743,6 @@ static int install_timeout_handler(const char *base_name, char *argv[])
     return EXIT_SUCCESS;
 }
 
-/* FIXME: copy/pasted from cscppc */
-bool is_input_file_suffix(const char *suffix)
-{
-    return STREQ(suffix, "c")
-        || STREQ(suffix, "C")
-        || STREQ(suffix, "cc")
-        || STREQ(suffix, "cpp")
-        || STREQ(suffix, "cxx");
-}
-
 void emit_kill_msg(int signum, const char *base_name, const char *file)
 {
     char *msg;
@@ -783,17 +773,7 @@ void collect_file_list(char **argv)
     /* iterate over input files and emit diagnost messages */
     const char *arg;
     for (; (arg = *argv); ++argv) {
-        /* FIXME: copy/pasted from cscppc */
-        const char *suffix = strrchr(arg, '.');
-        if (!suffix)
-            /* we require the file name to contain at least one dot */
-            continue;
-
-        /* skip behind the dot */
-        ++suffix;
-
-        /* check for a known input file suffix */
-        if (!is_input_file_suffix(suffix))
+        if (!is_input_file(arg, /* enable_cxx */ true))
             continue;
 
         /* allocate a new list item for the input file name */

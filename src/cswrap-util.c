@@ -116,6 +116,34 @@ bool remove_self_from_path(const char *tool, char *path, const char *wrap)
     return found;
 }
 
+static bool is_input_file_suffix(const char *suffix, const bool enable_cxx)
+{
+    if (STREQ(suffix, "c"))
+        return true;
+
+    if (!enable_cxx)
+        return false;
+
+    return STREQ(suffix, "C")
+        || STREQ(suffix, "cc")
+        || STREQ(suffix, "cpp")
+        || STREQ(suffix, "cxx");
+}
+
+bool is_input_file(const char *arg, const bool enable_cxx)
+{
+    const char *suffix = strrchr(arg, '.');
+    if (!suffix)
+        /* we require the file name to contain at least one dot */
+        return false;
+
+    /* skip behind the dot */
+    ++suffix;
+
+    /* check for a known input file suffix */
+    return is_input_file_suffix(suffix, enable_cxx);
+}
+
 bool is_ignored_file(const char *name)
 {
     /* used by autoconf */
