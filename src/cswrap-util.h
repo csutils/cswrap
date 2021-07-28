@@ -41,4 +41,7 @@ bool is_ignored_file(const char *name);
 /* return true if the arg vector indicates we are invoked by an LTO wrapper */
 bool invoked_by_lto_wrapper(char **argv);
 
+/* install signal handler hdl for signals in sig_list list terminated by 0 */
+bool install_signal_handler(void (*hdl)(int), const int sig_list[]);
+
 #endif /* CSWRAP_UTIL_H */

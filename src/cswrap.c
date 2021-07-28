@@ -639,7 +639,7 @@ void trans_paths_to_abs(const char *tool)
 static volatile pid_t tool_pid;
 static volatile sig_atomic_t timed_out;
 
-void signal_handler(int signum)
+static void signal_handler(int signum)
 {
     if (SIGCHLD == signum)
         // SIGCHLD handler is only set for getline() to be interrupted by EINTR
@@ -664,32 +664,19 @@ void signal_handler(int signum)
     errno = saved_errno;
 }
 
-static const struct sigaction sa = {
-    .sa_handler = signal_handler
-};
-
-/* FIXME: copy/pasted from cppcheck-gcc */
-bool install_signal_forwarder(void)
+static bool install_signal_forwarder(void)
 {
     static int forwarded_signals[] = {
+        SIGALRM,
         SIGCHLD,
         SIGINT,
         SIGPIPE,
         SIGQUIT,
-        SIGTERM
+        SIGTERM,
+        /* list terminator */ 0
     };
 
-    static int forwarded_signals_cnt =
-        sizeof(forwarded_signals)/
-        sizeof(forwarded_signals[0]);
-
-    /* install the handler for all forwarded signals */
-    int i;
-    for (i = 0; i < forwarded_signals_cnt; ++i)
-        if (0 != sigaction(forwarded_signals[i], &sa, NULL))
-            return false;
-
-    return true;
+    return install_signal_handler(signal_handler, forwarded_signals);
 }
 
 bool timeout_disabled_for(const char *base_name, char *argv[])
@@ -734,7 +721,7 @@ bool timeout_disabled_for(const char *base_name, char *argv[])
     }
 }
 
-int /* status */ install_timeout_handler(const char *base_name, char *argv[])
+static int install_timeout_handler(const char *base_name, char *argv[])
 {
     const char *str_time = getenv("CSWRAP_TIMEOUT");
     if (!str_time || !str_time[0] || timeout_disabled_for(base_name, argv))
@@ -749,10 +736,6 @@ int /* status */ install_timeout_handler(const char *base_name, char *argv[])
 
     if (UINT_MAX < timeout || timeout <= 0L)
         return fail("the value of $CSWRAP_TIMEOUT is out of range");
-
-    /* install SIGALRM handler */
-    if (0 != sigaction(SIGALRM, &sa, NULL))
-        return fail("unable to install timeout handler");
 
     /* activate the timeout! */
     tool_timeout = timeout;

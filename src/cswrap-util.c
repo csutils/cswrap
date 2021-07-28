@@ -22,6 +22,7 @@
 #include "cswrap-util.h"
 
 #include <limits.h>                 /* for PATH_MAX */
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -214,3 +215,20 @@ bool invoked_by_lto_wrapper(char **argv)
 
     return false;
 }
+
+/* install signal handler hdl for signals in sig_list list terminated by 0 */
+bool install_signal_handler(void (*hdl)(int), const int sig_list[])
+{
+    const struct sigaction sa = {
+        .sa_handler = hdl
+    };
+
+    int i = 0;
+    int signum;
+    while ((signum = sig_list[i++]))
+        if (0 != sigaction(signum, &sa, NULL))
+            return false;
+
+    return true;
+}
+
