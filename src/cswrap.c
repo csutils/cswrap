@@ -119,19 +119,19 @@ static int usage(char *argv[])
 }
 
 static FILE *cap_file;
-const char *cap_file_name;
+static const char *cap_file_name;
 
-sem_t *cap_file_lock;
+static sem_t *cap_file_lock;
 static const char cap_file_lock_name[] = "/cswrap_cap_file_lock";
 
-void init_cap_file_name(void)
+static void init_cap_file_name(void)
 {
     char *name = getenv("CSWRAP_CAP_FILE");
     if (name && name[0])
         cap_file_name = name;
 }
 
-bool lock_cap_file(void)
+static bool lock_cap_file(void)
 {
     static const char fail_msg[] = "failed to lock %s (%s)";
 
@@ -179,7 +179,7 @@ bool lock_cap_file(void)
     }
 }
 
-bool unlock_cap_file(void)
+static bool unlock_cap_file(void)
 {
     if (!sem_post(cap_file_lock))
         return true;
@@ -188,14 +188,14 @@ bool unlock_cap_file(void)
     return false;
 }
 
-void close_cap_file_lock(void)
+static void close_cap_file_lock(void)
 {
     assert(cap_file_lock);
     sem_close(cap_file_lock);
     cap_file_lock = NULL;
 }
 
-bool init_cap_file_once(void)
+static bool init_cap_file_once(void)
 {
     if (cap_file)
         /* already initialized */
@@ -232,7 +232,7 @@ bool init_cap_file_once(void)
     return true;
 }
 
-void release_cap_file(void)
+static void release_cap_file(void)
 {
     if (!cap_file)
         /* nothing to close */
@@ -251,7 +251,7 @@ void release_cap_file(void)
     close_cap_file_lock();
 }
 
-int force_cap_file_unlock(void)
+static int force_cap_file_unlock(void)
 {
     /* attempt to open an _existing_ semaphore */
     cap_file_lock = sem_open(cap_file_lock_name, 0);
@@ -356,7 +356,7 @@ static char* find_tool_in_path(const char *base_name, char *path)
     }
 }
 
-char** clone_argv(int argc, char *argv[])
+static char** clone_argv(int argc, char *argv[])
 {
     size_t size = (argc + 1) * sizeof(*argv);
     char **dup = malloc(size);
@@ -372,7 +372,7 @@ enum flag_op {
 };
 
 /* add/del a single flag from the argv array */
-bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
+static bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
 {
     int argc = 0;
     char **argv = *pargv;
@@ -408,7 +408,10 @@ bool handle_flag(char ***pargv, const enum flag_op op, const char *flag)
     return true;
 }
 
-bool handle_cvar(char ***pargv, const enum flag_op op, const char *env_var_name)
+static bool handle_cvar(
+        char                     ***pargv,
+        const enum flag_op          op,
+        const char                 *env_var_name)
 {
     char *slist = getenv(env_var_name);
     if (!slist || !slist[0])
@@ -443,7 +446,7 @@ bool handle_cvar(char ***pargv, const enum flag_op op, const char *env_var_name)
     }
 }
 
-bool translate_args(char ***pargv, const char *base_name)
+static bool translate_args(char ***pargv, const char *base_name)
 {
     if (STREQ(base_name, "cppcheck"))
         /* do not translate args for cppcheck */
@@ -460,7 +463,7 @@ bool translate_args(char ***pargv, const char *base_name)
 }
 
 /* return true if cmd-line args suggest we are called by a configure script */
-bool find_conftest_in_args(char **argv)
+static bool find_conftest_in_args(char **argv)
 {
     for (; *argv; ++argv)
         if (is_ignored_file(*argv))
@@ -470,7 +473,7 @@ bool find_conftest_in_args(char **argv)
 }
 
 /* return true if there is a cmd-line argument equal to seek_arg */
-bool seek_for_arg(const char *seek_arg, char **argv)
+static bool seek_for_arg(const char *seek_arg, char **argv)
 {
     for (; *argv; ++argv)
         if (STREQ(*argv, seek_arg))
@@ -480,7 +483,7 @@ bool seek_for_arg(const char *seek_arg, char **argv)
 }
 
 /* return true if msg matches "[0-9:] note: " and clang_analyzer is true */
-bool clang_analyzer_note(const char *msg)
+static bool clang_analyzer_note(const char *msg)
 {
     if (!clang_analyzer)
         return false;
@@ -504,13 +507,13 @@ struct str_item {
 
 #define STR_ITEM(str) { str, sizeof(str) - 1U }
 
-struct str_item msg_prefixes[] = {
+static struct str_item msg_prefixes[] = {
     STR_ITEM("In file included from "),
     STR_ITEM("                 from "),
     { NULL, 0U }
 };
 
-void write_out(
+static void write_out(
         FILE                       *fp,
         char                       *buf_orig,
         char                       *buf,
@@ -542,7 +545,7 @@ void write_out(
 }
 
 /* translate one line of a diagnostic message if an input file is matched */
-bool translate_line(char *buf, const char *tool)
+static bool translate_line(char *buf, const char *tool)
 {
     char *const buf_orig = buf;
     struct str_item *item;
@@ -608,7 +611,7 @@ bool translate_line(char *buf, const char *tool)
 }
 
 /* per-line handler of trans_paths_to_abs() */
-void handle_line(char *buf, const char *tool)
+static void handle_line(char *buf, const char *tool)
 {
     if (translate_line(buf, tool))
         return;
@@ -624,7 +627,7 @@ void handle_line(char *buf, const char *tool)
 }
 
 /* canonicalize paths the lines from stdin start with, write them to stderr */
-void trans_paths_to_abs(const char *tool)
+static void trans_paths_to_abs(const char *tool)
 {
     /* handle the input from stdin line by line */
     char *buf = NULL;
@@ -679,7 +682,7 @@ static bool install_signal_forwarder(void)
     return install_signal_handler(signal_handler, forwarded_signals);
 }
 
-bool timeout_disabled_for(const char *base_name, char *argv[])
+static bool timeout_disabled_for(const char *base_name, char *argv[])
 {
     const char *str_list = getenv("CSWRAP_TIMEOUT_FOR");
     if (!str_list || !str_list[0])
@@ -743,7 +746,7 @@ static int install_timeout_handler(const char *base_name, char *argv[])
     return EXIT_SUCCESS;
 }
 
-void emit_kill_msg(int signum, const char *base_name, const char *file)
+static void emit_kill_msg(int signum, const char *base_name, const char *file)
 {
     char *msg;
     static const char event[] = "internal warning";
@@ -761,14 +764,14 @@ void emit_kill_msg(int signum, const char *base_name, const char *file)
     free(msg);
 }
 
-void emit_kill_diagnostic(const int signum, const char *const base_name)
+static void emit_kill_diagnostic(const int signum, const char *const base_name)
 {
     struct strlist *it;
     for (it = file_list; it; it = it->next)
         emit_kill_msg(signum, base_name, it->str);
 }
 
-void collect_file_list(char **argv)
+static void collect_file_list(char **argv)
 {
     /* iterate over input files and emit diagnost messages */
     const char *arg;
@@ -796,7 +799,7 @@ void collect_file_list(char **argv)
     }
 }
 
-void destroy_file_list(void)
+static void destroy_file_list(void)
 {
     while (file_list) {
         struct strlist *next = file_list->next;
