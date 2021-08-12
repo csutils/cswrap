@@ -1,0 +1,77 @@
+csexec(1)
+=========
+:doctype: manpage
+
+NAME
+----
+csexec - dynamic linker wrapper
+
+
+SYNOPSIS
+--------
+*csexec* '--help' | '--print-ld-exec-cmd [argv0]'
+
+
+DESCRIPTION
+-----------
+csexec is a wrapper of the system dynamic linker which helps to run dynamic
+analyzers and formal verifiers on unmodified source RPM packages fully
+automatically.  The wrapper needs to be be enabled while linking binaries
+using *cswrap* and *csexec-loader*:
+
+-------------------------------------------------
+$ export PATH=$(cswrap --print-path-to-wrap):$PATH
+$ export CSWRAP_ADD_CFLAGS=-Wl,--dynamic-linker,/usr/bin/csexec-loader
+-------------------------------------------------
+
+The dynamic analysis tool can be specified at run-time with the
+*CSEXEC_WRAP_CMD* environment variable, as in the following example:
+
+-------------------------------------------------
+$ export CSEXEC_WRAP_CMD=$'valgrind\a--quiet\a--log-file=/dev/tty\a--leak-check=full'
+-------------------------------------------------
+
+Then the instrumented binaries will automatically launch the specified analyzer
+for themselves each time they are executed.
+
+OPTIONS
+-------
+*--help*::
+    Print basic usage information.
+
+*--print-ld-exec-cmd [argv0]*::
+    Print a command prefix that can be used to invoke dynamic linker explicitly.
+
+
+EXIT STATUS
+-----------
+Non-zero exit status is returned when csexec fails to execute the binary.
+Otherwise the analyzer (or the binary itself) determines the exit status.
+
+
+ENVIRONMENT VARIABLES
+---------------------
+**CSEXEC_WRAP_CMD**::
+    If set to a non-empty string, csexec prepends the command to be executed
+    with the specified program (analyzer).  The program name can be optionally
+    followed by a list of custom arguments for the analyzer, each of them
+    separated by the *BEL* character.  If the value of *`${CSEXEC_WRAP_CMD}`*
+    starts with *--skip-ld-linux* followed by *BEL*, csexec does not explicitly
+    invoke the system dynamic linker.
+
+
+BUGS
+----
+Please report bugs and feature requests at https://github.com/kdudka/cswrap .
+
+
+AUTHOR
+------
+Written by Kamil Dudka.
+
+
+COPYING
+-------
+Copyright \(C) 2020-2021 Red Hat, Inc. Free use of this software is granted
+under the terms of the GNU General Public License (GPL).  See the COPYING file
+for details.

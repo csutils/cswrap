@@ -166,6 +166,7 @@ done
 %{_bindir}/csexec
 %{_bindir}/csexec-loader
 %{_libdir}/libcsexec-preload.so
+%{_mandir}/man1/csexec.1*
 %doc COPYING
 %endif
 EOF
