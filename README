@@ -6,7 +6,7 @@ compiler (gcc, g++, ...) and put it to your $PATH.  cswrap --help prints usage
 to standard error output.  You can find the up2date sources in the following
 repository:
 
-    https://github.com/kdudka/cswrap
+    https://github.com/csutils/cswrap
 
 cswrap is licensed under GPLv3+, see COPYING for details.  Please report bugs
 and feature requests on GitHub using the above URL.
