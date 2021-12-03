@@ -216,6 +216,9 @@ int main(int argc, char *argv[])
     if (1 < wrap_argc && STREQ("--skip-ld-linux", exec_args[0])) {
         exec_file = exec_args[/* real wrap_cmd */ 1];
         exec_args[++exec_args_offset] = argv[/* ARG0 */ 1];
+
+        // shebang-executed shell scripts cannot easily access the real argv[0]
+        setenv("CSEXEC_ARGV0", argv[/* ARG0 */ 1], /* overwrite */ 1);
     }
     else {
         // explicitly invoke dynamic linker

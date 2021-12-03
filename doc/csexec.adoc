@@ -57,7 +57,9 @@ ENVIRONMENT VARIABLES
     followed by a list of custom arguments for the analyzer, each of them
     separated by the *BEL* character.  If the value of *`${CSEXEC_WRAP_CMD}`*
     starts with *--skip-ld-linux* followed by *BEL*, csexec does not explicitly
-    invoke the system dynamic linker.
+    invoke the system dynamic linker and it exports the *`${CSEXEC_ARGV0}`*
+    environment variable with the desired value of *argv0* (because
+    shebang-executed shell scripts cannot easily access it by other means).
 
 
 BUGS
