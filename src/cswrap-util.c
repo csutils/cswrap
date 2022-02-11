@@ -201,6 +201,13 @@ bool is_ignored_file(const char *name)
             return true;
     }
 
+    /* linktest.c in exports/ - used by openblas-0.3.15 */
+    if (STREQ(name, "linktest.c")) {
+        char cwd[PATH_MAX];
+        if (getcwd(cwd, sizeof cwd) && STREQ("exports", basename(cwd)))
+            return true;
+    }
+
     /* /config/auto-aux/... used by ocaml-4.07.0-4.el8 */
     if (STREQ(name, "async_io.c")
             || STREQ(name, "getgroups.c")
