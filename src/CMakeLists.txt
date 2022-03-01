@@ -85,7 +85,11 @@ endmacro()
 message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
 
 # based on https://sourceware.org/glibc/wiki/ABIList
-if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+    # TODO: will csexec-loader-aarch64.c work on aarch64be as well?
+    # LP64, hard-float, LE: /lib/ld-linux-aarch64.so.1
+    set(LD_LINUX_SO "/lib/ld-linux-aarch64.so.1")
+elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     # 64-bit, hard-float, LE: /lib64/ld-linux-x86-64.so.2
     set(LD_LINUX_SO "/lib64/ld-linux-x86-64.so.2")
 endif()
