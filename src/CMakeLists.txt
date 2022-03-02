@@ -39,7 +39,8 @@ macro(build_custom_target dst src flags)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dst}
         COMMAND ${cmd}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${src}
-        COMMENT "Building ${dst} with flags: ${flags_string}")
+        COMMENT "Building ${dst} with flags: ${flags_string}"
+        VERBATIM)
     add_custom_target(${dst}-target ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${dst})
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${dst}
             DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -83,6 +84,7 @@ if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     endif()
 
     # csexec-loader (custom ELF interpreter) does not use any C run-time libs
-    set(loader_flags -Wall -Wextra -g -O2 -fPIC -shared -nostdlib)
+    set(loader_flags -Wall -Wextra -g -O2 -fPIC -shared -nostdlib
+        -DCSEXEC_BIN="${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/csexec")
     build_custom_target(csexec-loader csexec-loader.c "${loader_flags}")
 endif()
