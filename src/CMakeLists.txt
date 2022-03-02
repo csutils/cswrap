@@ -46,14 +46,14 @@ target_link_libraries(cswrap PRIVATE Threads::Threads)
 install(TARGETS cswrap DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # build C unit with manually specified compiler/linker flags
-macro(build_custom_target dst src flags)
+macro(build_custom_target dst src deps flags)
     set(cmd ${CMAKE_C_COMPILER} ${flags} -o
         ${CMAKE_CURRENT_BINARY_DIR}/${dst}
         ${CMAKE_CURRENT_SOURCE_DIR}/${src})
     string(REPLACE ";" " " flags_string "${flags}")
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${dst}
         COMMAND ${cmd}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${src}
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${src} ${deps}
         COMMENT "Building ${dst} with flags: ${flags_string}"
         VERBATIM)
     add_custom_target(${dst} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${dst})
@@ -127,11 +127,13 @@ if(LD_LINUX_SO)
 
     # main build
     build_custom_target(csexec-loader csexec-loader-${CMAKE_SYSTEM_PROCESSOR}.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/csexec-loader-common.c
         "${loader_flags};-DCSEXEC_BIN=\"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/csexec\"")
     install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/csexec-loader"
             DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     # testing build
     build_custom_target(csexec-loader-test csexec-loader-${CMAKE_SYSTEM_PROCESSOR}.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/csexec-loader-common.c
         "${loader_flags};-DCSEXEC_BIN=\"${CMAKE_CURRENT_BINARY_DIR}/csexec\"")
 endif()
