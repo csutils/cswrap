@@ -77,6 +77,8 @@ if [[ "$1" != "--generate-spec" ]]; then
 fi
 
 cat > "$SPEC" << EOF
+%define csexec_archs aarch64 x86_64
+
 Name:       $PKG
 Version:    $VER
 Release:    1%{?dist}
@@ -119,8 +121,8 @@ BuildRequires: glibc-static
 %description
 Generic compiler wrapper used by csmock to capture diagnostic messages.
 
-# csexec is available on x86_64 only for now
-%ifarch x86_64
+# csexec is available on aarch64 and x86_64 only for now
+%ifarch %{csexec_archs}
 %package -n csexec
 Summary: Dynamic linker wrapper
 Conflicts: csexec < %{version}-%{release}
@@ -166,7 +168,7 @@ done
 %{_mandir}/man1/%{name}.1*
 %doc COPYING README
 
-%ifarch x86_64
+%ifarch %{csexec_archs}
 %files -n csexec
 %{_bindir}/csexec
 %{_bindir}/csexec-loader
