@@ -1,4 +1,4 @@
-# Copyright (C) 2014 - 2021 Red Hat, Inc.
+# Copyright (C) 2014 - 2022 Red Hat, Inc.
 #
 # This file is part of cswrap.
 #
@@ -20,17 +20,15 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
 add_definitions("-std=c99")
 
+include(GNUInstallDirs)
+
 # compile the executable, link with pthreads, and install
 add_executable(cswrap cswrap.c cswrap-util.c)
 target_link_libraries(cswrap ${CMAKE_THREAD_LIBS_INIT})
 if(CMAKE_USE_PTHREADS_INIT)
     set_target_properties(cswrap PROPERTIES COMPILE_FLAGS "-pthread")
 endif()
-install(TARGETS cswrap DESTINATION bin)
-
-if(NOT DEFINED LIB_INSTALL_DIR)
-  set(LIB_INSTALL_DIR lib)
-endif()
+install(TARGETS cswrap DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # build C unit with manually specified compiler/linker flags
 macro(build_custom_target dst src flags)
@@ -43,7 +41,8 @@ macro(build_custom_target dst src flags)
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${src}
         COMMENT "Building ${dst} with flags: ${flags_string}")
     add_custom_target(${dst}-target ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${dst})
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${dst} DESTINATION bin)
+    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${dst}
+            DESTINATION ${CMAKE_INSTALL_BINDIR})
 endmacro()
 
 # build csexec only if supported by target (=host) architecture
@@ -51,14 +50,14 @@ message(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     message(STATUS "csexec for x86_64 will be built")
     add_executable(csexec csexec.c)
-    install(TARGETS csexec DESTINATION bin)
+    install(TARGETS csexec DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     # readlink() wrapper
     add_library(csexec-preload SHARED csexec-preload.c)
     set_target_properties(csexec-preload PROPERTIES COMPILE_FLAGS "-pthread")
     set_target_properties(csexec-preload PROPERTIES LINK_FLAGS "-nostdlib")
     target_link_libraries(csexec-preload dl pthread)
-    install(TARGETS csexec-preload DESTINATION ${LIB_INSTALL_DIR})
+    install(TARGETS csexec-preload DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     # check whether /lib64/ld-linux-x86-64.so.2 takes --argv0, introduced with:
     # https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=c6702789
