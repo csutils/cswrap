@@ -27,15 +27,19 @@
 // query real path of the executable
 static const char* dig_execfn(const char **argv, const char **env_ptr)
 {
-    // auxiliary vector entries (System V AMD64 ABI: Process Initialization)
+    // auxiliary vector entries
     // NOTE: if LD_SHOW_AUXV is exported, ld.so displays the auxiliary vector
     enum {
         AT_NULL     = 0,
         AT_EXECFN   = 31
     };
+
+    // definition of Elf64_auxv_t in glibc's elf/elf.h
     struct aux {
-        int         a_type;
-        const char *a_value;
+        unsigned long     a_type;
+        union {
+            unsigned long a_val;
+        };
     };
 
     // skip environment variables, the auxiliary vector is just behind them
@@ -51,7 +55,7 @@ static const char* dig_execfn(const char **argv, const char **env_ptr)
 
             case AT_EXECFN:
                 // found!
-                return paux->a_value;
+                return (const char *) paux->a_val;
 
             default:
                 // keep searching
