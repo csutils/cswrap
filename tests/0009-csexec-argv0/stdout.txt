@@ -1,0 +1,1 @@
+hopefully, nothing like this is in $PATH

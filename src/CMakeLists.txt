@@ -57,8 +57,6 @@ macro(build_custom_target dst src flags)
         COMMENT "Building ${dst} with flags: ${flags_string}"
         VERBATIM)
     add_custom_target(${dst} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${dst})
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${dst}
-            DESTINATION ${CMAKE_INSTALL_BINDIR})
 endmacro()
 
 # check if ld-linux.so takes the given option and define corresponding macros
@@ -125,8 +123,15 @@ if(LD_LINUX_SO)
     check_ld_flag("${cmd}" "argv0")
 
     # csexec-loader (custom ELF interpreter) does not use any C run-time libs
-    set(loader_flags -Wall -Wextra -g -O2 -fPIC -shared -nostdlib
-        -DCSEXEC_BIN="${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/csexec")
+    set(loader_flags -Wall -Wextra -g -O2 -fPIC -shared -nostdlib)
+
+    # main build
     build_custom_target(csexec-loader csexec-loader-${CMAKE_SYSTEM_PROCESSOR}.c
-                        "${loader_flags}")
+        "${loader_flags};-DCSEXEC_BIN=\"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/csexec\"")
+    install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/csexec-loader"
+            DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+    # testing build
+    build_custom_target(csexec-loader-test csexec-loader-${CMAKE_SYSTEM_PROCESSOR}.c
+        "${loader_flags};-DCSEXEC_BIN=\"${CMAKE_CURRENT_BINARY_DIR}/csexec\"")
 endif()

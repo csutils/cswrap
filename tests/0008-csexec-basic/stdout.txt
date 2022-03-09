@@ -1,0 +1,2 @@
+wrapper executed!
+binary: CSEXEC_WRAP_CMD exists
