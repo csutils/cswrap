@@ -15,6 +15,17 @@ PATH_TO_CSWRAP="$3"
 # path to a directory containing libraries and executables
 PATH_TO_CSEXEC_LIBS="$(dirname "$3")"
 
+# path to the csexec-loader binary
+PATH_TO_CSEXEC_LOADER="$(dirname "$3")/csexec-loader-test"
+
+# ld.so takes --argv0
+("${PATH_TO_CSEXEC_LIBS}/csexec" --print-ld-exec-cmd argv0 | grep -qv -- --preload)
+LD_LINUX_SO_TAKES_PRELOAD="$?"
+
+# ld.so takes --argv0
+("${PATH_TO_CSEXEC_LIBS}/csexec" --print-ld-exec-cmd argv0 | grep -qv -- --argv0)
+LD_LINUX_SO_TAKES_ARGV0="$?"
+
 # create $TEST_DST_DIR (if it does not exist already)
 mkdir -p "$TEST_DST_DIR" || exit $?
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2014 - 2021 Red Hat, Inc.
+# Copyright (C) 2014 - 2022 Red Hat, Inc.
 #
 # This file is part of cswrap.
 #
@@ -21,15 +21,21 @@ foreach(runtest ${runtests})
     get_filename_component(test_src_dir "${runtest}" PATH)
     get_filename_component(test_name "${test_src_dir}" NAME)
 
+    if(NOT TARGET csexec AND "${test_name}" MATCHES "csexec")
+        continue()
+    endif()
+
     # for each of them run: runtest.sh TEST_SRC_DIR TEST_DST_DIR PATH_TO_CSWRAP
     add_test("${test_name}" "${runtest}" "${test_src_dir}"
         "${CMAKE_CURRENT_BINARY_DIR}/${test_name}/"
         "${CMAKE_BINARY_DIR}/src/cswrap")
+    set_tests_properties("${test_name}" PROPERTIES SKIP_RETURN_CODE 42)
 endforeach()
 
 # provide the 'check' target of make
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 add_dependencies(check cswrap)
 if(TARGET csexec)
-    add_dependencies(check csexec csexec-loader csexec-preload)
+    add_dependencies(check csexec csexec-loader csexec-loader-test
+                           csexec-preload)
 endif()
