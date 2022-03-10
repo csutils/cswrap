@@ -77,7 +77,7 @@ if [[ "$1" != "--generate-spec" ]]; then
 fi
 
 cat > "$SPEC" << EOF
-%define csexec_archs aarch64 ppc64le x86_64
+%define csexec_archs aarch64 ppc64le s390x x86_64
 
 Name:       $PKG
 Version:    $VER

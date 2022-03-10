@@ -93,6 +93,9 @@ elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "ppc64le")
     # TODO: will csexec-loader-ppc64le work on ppc64 as well?
     # 64-bit, hard-float, LE: /lib64/ld64.so.2
     set(LD_LINUX_SO "/lib64/ld64.so.2")
+elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "s390x")
+    # 64-bit, hard-float, BE: /lib/ld64.so.1
+    set(LD_LINUX_SO "/lib/ld64.so.1")
 elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     # 64-bit, hard-float, LE: /lib64/ld-linux-x86-64.so.2
     set(LD_LINUX_SO "/lib64/ld-linux-x86-64.so.2")
