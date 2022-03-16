@@ -22,8 +22,10 @@ jobs:
       trigger: commit
       metadata:
         targets:
-            - fedora-all-x86_64
+            - epel-all-aarch64
             - epel-all-x86_64
+            - fedora-all-aarch64
+            - fedora-all-x86_64
         branch: main  # only used for commit trigger
 
     - <<: *copr
