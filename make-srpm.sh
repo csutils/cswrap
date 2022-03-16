@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2013-2021 Red Hat, Inc.
+# Copyright (C) 2013-2022 Red Hat, Inc.
 #
 # This file is part of cswrap.
 #
@@ -47,30 +47,35 @@ VER="`echo "$VER" | sed "s/-.*-/.$TIMESTAMP./"`"
 
 BRANCH="`git rev-parse --abbrev-ref HEAD`"
 test -n "$BRANCH" || die "failed to get current branch name"
-test "main" = "${BRANCH}" || VER="${VER}.${BRANCH//-/_}"
+test "main" = "${BRANCH}" || VER="${VER}.${BRANCH//[\/-]/_}"
 test -z "`git diff HEAD`" || VER="${VER}.dirty"
 
 NV="${PKG}-${VER}"
 printf "%s: preparing a release of \033[1;32m%s\033[0m\n" "$SELF" "$NV"
 
-TMP="`mktemp -d`"
-trap "rm -rf '$TMP'" EXIT
-cd "$TMP" >/dev/null || die "mktemp failed"
+SPEC="$PKG.spec"
 
-# clone the repository
-git clone "$REPO" "$PKG"                || die "git clone failed"
-cd "$PKG"                               || die "git clone failed"
+if [[ "$1" != "--generate-spec" ]]; then
+    TMP="`mktemp -d`"
+    trap "rm -rf '$TMP'" EXIT
+    cd "$TMP" >/dev/null || die "mktemp failed"
 
-make distcheck                          || die "'make distcheck' has failed"
+    # clone the repository
+    git clone "$REPO" "$PKG"                || die "git clone failed"
+    cd "$PKG"                               || die "git clone failed"
 
-SRC_TAR="${NV}.tar"
-SRC="${SRC_TAR}.xz"
-git archive --prefix="$NV/" --format="tar" HEAD -- . > "${TMP}/${SRC_TAR}" \
-                                        || die "failed to export sources"
-cd "$TMP" >/dev/null                    || die "mktemp failed"
-xz -c "$SRC_TAR" > "$SRC"               || die "failed to compress sources"
+    make distcheck                          || die "'make distcheck' has failed"
 
-SPEC="$TMP/$PKG.spec"
+    SRC_TAR="${NV}.tar"
+    SRC="${SRC_TAR}.xz"
+    git archive --prefix="$NV/" --format="tar" HEAD -- . > "${TMP}/${SRC_TAR}" \
+                                            || die "failed to export sources"
+    cd "$TMP" >/dev/null                    || die "mktemp failed"
+    xz -c "$SRC_TAR" > "$SRC"               || die "failed to compress sources"
+
+    SPEC="$TMP/$SPEC"
+fi
+
 cat > "$SPEC" << EOF
 Name:       $PKG
 Version:    $VER
@@ -171,7 +176,9 @@ done
 %endif
 EOF
 
-rpmbuild -bs "$SPEC"                            \
-    --define "_sourcedir $TMP"                  \
-    --define "_specdir $TMP"                    \
-    --define "_srcrpmdir $DST"
+if [[ "$1" != "--generate-spec" ]]; then
+    rpmbuild -bs "$SPEC"                            \
+        --define "_sourcedir $TMP"                  \
+        --define "_specdir $TMP"                    \
+        --define "_srcrpmdir $DST"
+fi
