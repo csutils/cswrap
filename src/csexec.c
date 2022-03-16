@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Red Hat, Inc.
+ * Copyright (C) 2020 - 2022 Red Hat, Inc.
  *
  * This file is part of cswrap.
  *
@@ -44,6 +44,12 @@
 #   define LIBCSEXEC_PRELOAD_SO "libcsexec-preload.so"
 #endif
 
+// set to 1 if dynamic linker supports the --preload option, as implemented with:
+// https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=8692ebdb
+#ifndef LD_LINUX_SO_TAKES_PRELOAD
+#   define LD_LINUX_SO_TAKES_PRELOAD 0
+#endif
+
 // set to 1 if dynamic linker supports the --argv0 option, as implemented with:
 // https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=c6702789
 #ifndef LD_LINUX_SO_TAKES_ARGV0
@@ -64,7 +70,10 @@ static int print_help(void)
 // print a command prefix that can be used to invoke dynamic linker explicitly
 static int print_ld_exec_cmd(const char *argv0)
 {
-    printf("%s", LD_LINUX_SO " --preload " LIBCSEXEC_PRELOAD_SO);
+    printf("%s", LD_LINUX_SO);
+#if LD_LINUX_SO_TAKES_PRELOAD
+    printf(" --preload %s", LIBCSEXEC_PRELOAD_SO);
+#endif
 #if LD_LINUX_SO_TAKES_ARGV0
     if (argv0)
         printf(" --argv0 %s", argv0);
@@ -223,8 +232,10 @@ int main(int argc, char *argv[])
     else {
         // explicitly invoke dynamic linker
         exec_args[idx_dst++] = (char *) LD_LINUX_SO;
+#if LD_LINUX_SO_TAKES_PRELOAD
         exec_args[idx_dst++] = (char *) "--preload";
         exec_args[idx_dst++] = (char *) LIBCSEXEC_PRELOAD_SO;
+#endif
 #if LD_LINUX_SO_TAKES_ARGV0
         exec_args[idx_dst++] = (char *) "--argv0";
         exec_args[idx_dst++] = argv[/* ARG0 */ 1];
