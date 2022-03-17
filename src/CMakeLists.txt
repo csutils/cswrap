@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with cswrap.  If not, see <http://www.gnu.org/licenses/>.
 
+# set standards
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
+
 # initialize pthreads
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
