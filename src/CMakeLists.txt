@@ -16,21 +16,20 @@
 # along with cswrap.  If not, see <http://www.gnu.org/licenses/>.
 
 # initialize pthreads
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
-add_definitions("-std=c99")
+if(NOT CMAKE_USE_PTHREADS_INIT)
+    message(FATAL_ERROR "${CMAKE_THREAD_LIBS_INIT} is not pthread compatible!")
+endif()
 
 include(GNUInstallDirs)
 
 # compile the executable, link with pthreads, and install
 add_executable(cswrap cswrap.c cswrap-util.c)
-target_link_libraries(cswrap ${CMAKE_THREAD_LIBS_INIT})
-if(CMAKE_USE_PTHREADS_INIT)
-    set_target_properties(cswrap PROPERTIES COMPILE_FLAGS "-pthread")
-endif()
 if(PATH_TO_WRAP)
     target_compile_definitions(cswrap PRIVATE -DPATH_TO_WRAP=${PATH_TO_WRAP})
 endif()
+target_link_libraries(cswrap PRIVATE Threads::Threads)
 install(TARGETS cswrap DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # build C unit with manually specified compiler/linker flags
@@ -73,10 +72,10 @@ if(LD_LINUX_SO)
 
     # readlink() wrapper
     add_library(csexec-preload SHARED csexec-preload.c)
-    set_target_properties(csexec-preload PROPERTIES COMPILE_FLAGS "-pthread")
     set_target_properties(csexec-preload PROPERTIES LINK_FLAGS "-nostdlib")
     target_compile_definitions(csexec-preload PRIVATE LD_LINUX_SO="${LD_LINUX_SO}")
-    target_link_libraries(csexec-preload dl pthread)
+    target_link_libraries(csexec-preload PRIVATE ${CMAKE_DL_LIBS}
+                                                 Threads::Threads)
     install(TARGETS csexec-preload DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     # check whether ${LD_LINUX_SO} takes --argv0, introduced with:
