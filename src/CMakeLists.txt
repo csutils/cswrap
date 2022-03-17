@@ -56,7 +56,7 @@ macro(build_custom_target dst src flags)
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${src}
         COMMENT "Building ${dst} with flags: ${flags_string}"
         VERBATIM)
-    add_custom_target(${dst}-target ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${dst})
+    add_custom_target(${dst} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${dst})
     install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${dst}
             DESTINATION ${CMAKE_INSTALL_BINDIR})
 endmacro()
