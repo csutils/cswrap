@@ -28,6 +28,9 @@ target_link_libraries(cswrap ${CMAKE_THREAD_LIBS_INIT})
 if(CMAKE_USE_PTHREADS_INIT)
     set_target_properties(cswrap PROPERTIES COMPILE_FLAGS "-pthread")
 endif()
+if(PATH_TO_WRAP)
+    target_compile_definitions(cswrap PRIVATE -DPATH_TO_WRAP=${PATH_TO_WRAP})
+endif()
 install(TARGETS cswrap DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # build C unit with manually specified compiler/linker flags
