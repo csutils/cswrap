@@ -12,6 +12,9 @@ TEST_DST_DIR="$2"
 # path to the cswrap binary
 PATH_TO_CSWRAP="$3"
 
+# path to a directory containing libraries and executables
+PATH_TO_CSEXEC_LIBS="$(dirname "$3")"
+
 # create $TEST_DST_DIR (if it does not exist already)
 mkdir -p "$TEST_DST_DIR" || exit $?
 
