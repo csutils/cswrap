@@ -137,8 +137,9 @@ fully automatically.
 %build
 mkdir cswrap_build
 cd cswrap_build
-export LDFLAGS="\$RPM_OPT_FLAGS -static -pthread"
-%cmake3 -S.. .. -B. -DPATH_TO_WRAP=\"%{_libdir}/cswrap\"
+%cmake3 -S.. .. -B. \\
+    -DPATH_TO_WRAP=\"%{_libdir}/cswrap\" \\
+    -DSTATIC_LINKING=ON
 make %{?_smp_mflags} VERBOSE=yes
 
 %check
