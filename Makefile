@@ -1,4 +1,4 @@
-# Copyright (C) 2014 Red Hat, Inc.
+# Copyright (C) 2014 - 2022 Red Hat, Inc.
 #
 # This file is part of cswrap.
 #
@@ -19,6 +19,7 @@ NUM_CPU ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 
 CMAKE ?= cmake
 CTEST ?= ctest -j$(NUM_CPU)
+STATIC ?= OFF
 
 CMAKE_BUILD_TYPE ?= RelWithDebInfo
 
@@ -34,8 +35,12 @@ all:
 	mkdir -p cswrap_build
 	cd cswrap_build && $(CMAKE) \
 		-DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" \
-		-DCMAKE_CTEST_COMMAND="$(CTEST_CMD)" ..
+		-DCMAKE_CTEST_COMMAND="$(CTEST_CMD)" \
+		-DSTATIC_LINKING=$(STATIC) ..
 	$(MAKE) -sC cswrap_build -j$(NUM_CPU)
+
+static:
+	$(MAKE) -s all STATIC=ON
 
 check: all
 	cd cswrap_build && $(MAKE) check
@@ -45,6 +50,9 @@ clean:
 
 distclean:
 	rm -rf cswrap_build
+
+distcheck-static:
+	$(MAKE) -s distcheck STATIC=ON
 
 distcheck: distclean
 	$(MAKE) -s check
