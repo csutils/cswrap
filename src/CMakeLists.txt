@@ -85,7 +85,6 @@ if(LD_LINUX_SO)
 
     # readlink() wrapper
     add_library(csexec-preload SHARED csexec-preload.c)
-    set_target_properties(csexec-preload PROPERTIES LINK_FLAGS "-nostdlib")
     target_compile_definitions(csexec-preload PRIVATE LD_LINUX_SO="${LD_LINUX_SO}")
     target_link_libraries(csexec-preload PRIVATE ${CMAKE_DL_LIBS}
                                                  Threads::Threads)
