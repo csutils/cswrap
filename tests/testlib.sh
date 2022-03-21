@@ -18,7 +18,7 @@ PATH_TO_CSEXEC_LIBS="$(dirname "$3")"
 # path to the csexec-loader binary
 PATH_TO_CSEXEC_LOADER="$(dirname "$3")/csexec-loader-test"
 
-# ld.so takes --argv0
+# ld.so takes --preload
 ("${PATH_TO_CSEXEC_LIBS}/csexec" --print-ld-exec-cmd argv0 | grep -qv -- --preload)
 LD_LINUX_SO_TAKES_PRELOAD="$?"
 
