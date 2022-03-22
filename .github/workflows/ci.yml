@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   ubuntu:
-    name: Ubuntu ${{ maxtrix.version }}
+    name: Ubuntu ${{ matrix.version }}
     strategy:
       fail-fast: false
       matrix:
