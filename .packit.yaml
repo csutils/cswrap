@@ -23,8 +23,10 @@ jobs:
       metadata:
         targets:
             - epel-all-aarch64
+            - epel-all-ppc64le
             - epel-all-x86_64
             - fedora-all-aarch64
+            - fedora-all-ppc64le
             - fedora-all-x86_64
         branch: main  # only used for commit trigger
 
