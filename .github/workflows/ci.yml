@@ -1,0 +1,45 @@
+---
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+jobs:
+  ubuntu:
+    name: Ubuntu ${{ matrix.version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [18.04, 20.04]
+
+    runs-on: ubuntu-${{ matrix.version }}
+    env:
+      DEBIAN_FRONTEND: noninteractive
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake valgrind
+
+      - name: Build and check
+        run: make distcheck
+
+  coverity:
+    name: Coverity Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Coverity scan
+        uses: vapier/coverity-scan-action@v1
+        with:
+          email: ${{ secrets.COVERITY_SCAN_EMAIL }}
+          token: ${{ secrets.COVERITY_SCAN_TOKEN }}
+          project: csutils/cswrap
+          command: make
