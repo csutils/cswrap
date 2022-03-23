@@ -90,7 +90,7 @@ URL:        https://github.com/csutils/%{name}
 Source0:    https://github.com/csutils/%{name}/releases/download/%{name}-%{version}/%{name}-%{version}.tar.xz
 
 # cswrap-1.3.0+ emits internal warnings per timed out scans (used by csdiff to
-# eliminate false positivies that such a scan would otherwise cause) ==> force
+# eliminate false positives that such a scan would otherwise cause) ==> force
 # new enough versions of the higher-level tools that will suppress them.
 Conflicts: csbuild       < 1.7.0
 Conflicts: csdiff        < 1.2.0
@@ -121,7 +121,7 @@ BuildRequires: glibc-static
 %description
 Generic compiler wrapper used by csmock to capture diagnostic messages.
 
-# csexec is available on aarch64 and x86_64 only for now
+# csexec is available on architectures defined in %%{csexec_archs} only
 %ifarch %{csexec_archs}
 %package -n csexec
 Summary: Dynamic linker wrapper
