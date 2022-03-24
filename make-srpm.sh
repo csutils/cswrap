@@ -84,21 +84,19 @@ Version:    $VER
 Release:    1%{?dist}
 Summary:    Generic compiler wrapper
 
-Group:      Development/Tools
 License:    GPLv3+
 URL:        https://github.com/csutils/%{name}
 Source0:    https://github.com/csutils/%{name}/releases/download/%{name}-%{version}/%{name}-%{version}.tar.xz
 
-# cswrap-1.3.0+ emits internal warnings per timed out scans (used by csdiff to
-# eliminate false positives that such a scan would otherwise cause) ==> force
-# new enough versions of the higher-level tools that will suppress them.
-Conflicts: csbuild       < 1.7.0
-Conflicts: csdiff        < 1.2.0
-Conflicts: csmock-common < 1.7.0
-
 BuildRequires: asciidoc
 BuildRequires: cmake3
 BuildRequires: gcc
+
+# csmock copies the resulting cswrap binary into mock chroot, which may contain
+# an older (e.g. RHEL-7) version of glibc, and it would not dynamically link
+# against the old version of glibc if it was built against a newer one.
+# Therefor we link glibc statically.
+BuildRequires: glibc-static
 
 # The test-suite runs automatically trough valgrind if valgrind is available
 # on the system.  By not installing valgrind into mock's chroot, we disable
@@ -108,14 +106,6 @@ BuildRequires: gcc
 # valgrind manually to improve test coverage on any architecture.
 %ifarch %{ix86} x86_64
 BuildRequires: valgrind
-%endif
-
-# csmock copies the resulting cswrap binary into mock chroot, which may contain
-# an older (e.g. RHEL-5) version of glibc, and it would not dynamically link
-# against the old version of glibc if it was built against a newer one.
-# Therefor we link glibc statically.
-%if (0%{?fedora} >= 12 || 0%{?rhel} >= 6)
-BuildRequires: glibc-static
 %endif
 
 %description
