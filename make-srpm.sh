@@ -95,7 +95,7 @@ BuildRequires: gcc
 # csmock copies the resulting cswrap binary into mock chroot, which may contain
 # an older (e.g. RHEL-7) version of glibc, and it would not dynamically link
 # against the old version of glibc if it was built against a newer one.
-# Therefor we link glibc statically.
+# Therefore, we link glibc statically.
 BuildRequires: glibc-static
 
 # The test-suite runs automatically trough valgrind if valgrind is available
