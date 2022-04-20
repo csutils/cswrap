@@ -7,14 +7,16 @@ on:
 
 jobs:
   ubuntu:
-    name: Ubuntu ${{ matrix.version }}
+    name: Ubuntu ${{ matrix.version }} (${{ matrix.compiler }})
     strategy:
       fail-fast: false
       matrix:
+        compiler: [clang, gcc]
         version: [18.04, 20.04]
 
     runs-on: ubuntu-${{ matrix.version }}
     env:
+      CC: ${{ matrix.compiler }}
       DEBIAN_FRONTEND: noninteractive
 
     steps:
