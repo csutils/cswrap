@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y cmake valgrind
+          sudo apt install -y valgrind
 
       - name: Coverity scan
         uses: vapier/coverity-scan-action@v1

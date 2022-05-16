@@ -22,11 +22,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y cmake
-
       - name: '[Jammy] Add sanitizers to CFLAGS'
         if: matrix.version >= 22.04
         run: |
