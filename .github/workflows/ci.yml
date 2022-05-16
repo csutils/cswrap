@@ -25,7 +25,44 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y cmake valgrind
+          sudo apt install -y cmake
+
+      - name: '[Jammy] Add sanitizers to CFLAGS'
+        if: matrix.version >= 22.04
+        run: |
+          # Use ASAN and UBSAN
+          CFLAGS="-fsanitize=address,undefined"
+          # Recommended for better error traces
+          CFLAGS="$CFLAGS -fno-omit-frame-pointer"
+          # Make UBSAN reports fatal
+          CFLAGS="$CFLAGS -fno-sanitize-recover=all"
+
+          # Use shared libasan for libcsexec-preload.so.
+          # For details see https://systemd.io/TESTING_WITH_SANITIZERS/#clang.
+          if [[ "${{matrix.compiler}}" == "clang" ]]; then
+            CFLAGS="$CFLAGS -shared-libasan"
+          fi
+
+          # Needed for testing of libcsexec-preload.so.
+          if [[ "${{matrix.compiler}}" == "clang" ]]; then
+            LD_PRELOAD="$(clang -print-file-name=libclang_rt.asan-x86_64.so)"
+          else
+            LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
+          fi
+
+          # Due to LD_PRELOAD above, leak sanitizer was reporting leaks
+          # literally in everything that was executed, e.g. make, shell,
+          # python and other tools that are not under our control.
+          ASAN_OPTIONS="detect_leaks=0"
+
+          # Make UBSAN print whole stack traces
+          UBSAN_OPTIONS="print_stacktrace=1"
+
+          # Store the env variables
+          echo "CFLAGS=$CFLAGS" >> "$GITHUB_ENV"
+          echo "ASAN_OPTIONS=$ASAN_OPTIONS" >> "$GITHUB_ENV"
+          echo "UBSAN_OPTIONS=$UBSAN_OPTIONS" >> "$GITHUB_ENV"
+          echo "LD_PRELOAD=$LD_PRELOAD" >> "$GITHUB_ENV"
 
       - name: Build and check
         run: make distcheck
