@@ -34,12 +34,12 @@ jobs:
 
           # Use shared libasan for libcsexec-preload.so.
           # For details see https://systemd.io/TESTING_WITH_SANITIZERS/#clang.
-          if [[ "${{matrix.compiler}}" == "clang" ]]; then
+          if [[ "${{ matrix.compiler }}" == "clang" ]]; then
             CFLAGS="$CFLAGS -shared-libasan"
           fi
 
           # Needed for testing of libcsexec-preload.so.
-          if [[ "${{matrix.compiler}}" == "clang" ]]; then
+          if [[ "${{ matrix.compiler }}" == "clang" ]]; then
             LD_PRELOAD="$(clang -print-file-name=libclang_rt.asan-x86_64.so)"
           else
             LD_PRELOAD="$(gcc -print-file-name=libasan.so)"
