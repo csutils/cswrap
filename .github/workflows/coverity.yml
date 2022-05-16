@@ -12,11 +12,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y valgrind
-
       - name: Coverity scan
         uses: vapier/coverity-scan-action@v1
         with:
