@@ -16,7 +16,7 @@ DESCRIPTION
 -----------
 csexec is a wrapper of the system dynamic linker which helps to run dynamic
 analyzers and formal verifiers on unmodified source RPM packages fully
-automatically.  The wrapper needs to be be enabled while linking binaries
+automatically.  The wrapper needs to be enabled while linking binaries
 using *cswrap* and *csexec-loader*:
 
 -------------------------------------------------
