@@ -21,18 +21,19 @@ actions:
 jobs:
     - &copr
       job: copr_build
-      trigger: commit
-      metadata:
-        targets:
-            - epel-all-aarch64
-            - epel-all-ppc64le
-            - epel-all-s390x
-            - epel-all-x86_64
-            - fedora-all-aarch64
-            - fedora-all-ppc64le
-            - fedora-all-s390x
-            - fedora-all-x86_64
-        branch: main  # only used for commit trigger
+      trigger: pull_request
+      targets:
+          - epel-all-aarch64
+          - epel-all-ppc64le
+          - epel-all-s390x
+          - epel-all-x86_64
+          - fedora-all-aarch64
+          - fedora-all-ppc64le
+          - fedora-all-s390x
+          - fedora-all-x86_64
 
     - <<: *copr
-      trigger: pull_request
+      trigger: commit
+      owner: "@codescan"
+      project: "cswrap"
+      branch: main
