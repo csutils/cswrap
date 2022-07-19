@@ -15,5 +15,5 @@ command -v "$ARGVO" && exit 1
 export LD_LIBRARY_PATH="${PATH_TO_CSEXEC_LIBS}"
 (exec -a "$ARGVO" ./out > stdout.txt 2> stderr.txt)
 
-diff -u stdout.txt "${TEST_SRC_DIR}/stdout.txt" || exit 1
 diff -u stderr.txt "${TEST_SRC_DIR}/stderr.txt" || exit 1
+diff -u stdout.txt "${TEST_SRC_DIR}/stdout.txt" || exit 1

@@ -11,6 +11,7 @@ gcc -Wl,--dynamic-linker="${PATH_TO_CSEXEC_LOADER}" -o out \
 
 # run
 export LD_LIBRARY_PATH="${PATH_TO_CSEXEC_LIBS}"
-./out 2> stderr.txt | grep -vsE '\/ld[^\/]*\.so\.[[:digit:]]$' || exit 1
+./out > stdout.txt 2> stderr.txt
 
 diff -u stderr.txt "${TEST_SRC_DIR}/stderr.txt" || exit 1
+grep -vsE '\/ld[^\/]*\.so\.[[:digit:]]$' stdout.txt || { cat stdout.txt; exit 1; }
