@@ -23,7 +23,7 @@ STATIC ?= OFF
 
 CMAKE_BUILD_TYPE ?= RelWithDebInfo
 
-.PHONY: all check clean distclean distcheck install
+.PHONY: all check clean static distclean distcheck distcheck-static install
 
 # define $(space) as " " to be used in $(subst ...)
 space := $(subst ,, )
