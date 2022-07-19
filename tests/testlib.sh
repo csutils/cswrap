@@ -20,12 +20,53 @@ PATH_TO_CSEXEC_LIBS="$(dirname "$3")"
 # path to the csexec-loader binary
 PATH_TO_CSEXEC_LOADER="$(dirname "$3")/csexec-loader-test"
 
+# sanitizer build is used
+grep -q "SANITIZERS:BOOL=ON" "$PATH_TO_CSEXEC_LIBS/../CMakeCache.txt"
+HAS_SANITIZERS="$?"
+
+if [[ "$HAS_SANITIZERS" -eq 0 ]]; then
+    # make UBSan print whole stack traces
+    export UBSAN_OPTIONS="print_stacktrace=1"
+
+    # enable LSan suppresions for known leaks
+    LSAN_OPTIONS="print_suppressions=0"
+    LSAN_OPTIONS="$LSAN_OPTIONS,suppressions=$PATH_TO_CSEXEC_LIBS/../../src/lsan.supp"
+    export LSAN_OPTIONS
+
+    case "$CC_ID" in
+        GNU)
+            LIBASAN_PATH="$("$CC" -print-file-name=libasan.so)"
+
+            # Fedora/RHEL's libasan.so is not a (symlink to a) dynamic library
+            # but a linker script, so let's try to parse it instead.
+            # https://bugzilla.redhat.com/show_bug.cgi?id=1923196
+            if file -L "$LIBASAN_PATH" | grep 'ASCII text'; then
+                LIBASAN_PATH="$(grep -oP '/.*\d' "$LIBASAN_PATH")"
+            fi
+
+            ;;
+        Clang)
+            LIBASAN_PATH="$("$CC" -print-file-name=libclang_rt.asan-"$(uname -m)".so)"
+            ;;
+        *)
+            echo "Unknown compiler $CC_ID"
+            exit 1
+    esac
+
+    export LIBASAN_PATH
+fi
+
+check_ld_so_flag() {
+    LD_PRELOAD="$LIBASAN_PATH" \
+    "$PATH_TO_CSEXEC_LIBS/csexec" --print-ld-exec-cmd argv0 | grep -qv -- "$1"
+}
+
 # ld.so takes --preload
-("${PATH_TO_CSEXEC_LIBS}/csexec" --print-ld-exec-cmd argv0 | grep -qv -- --preload)
+check_ld_so_flag --preload
 LD_LINUX_SO_TAKES_PRELOAD="$?"
 
 # ld.so takes --argv0
-("${PATH_TO_CSEXEC_LIBS}/csexec" --print-ld-exec-cmd argv0 | grep -qv -- --argv0)
+check_ld_so_flag --argv0
 LD_LINUX_SO_TAKES_ARGV0="$?"
 
 # create $TEST_DST_DIR (if it does not exist already)

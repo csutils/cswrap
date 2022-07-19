@@ -30,6 +30,12 @@ foreach(runtest ${runtests})
         "${CMAKE_CURRENT_BINARY_DIR}/${test_name}/"
         "${CMAKE_BINARY_DIR}/src/cswrap")
     set_tests_properties("${test_name}" PROPERTIES SKIP_RETURN_CODE 42)
+
+    # TODO: we should use configure_file instead
+    set_tests_properties("${test_name}" PROPERTIES ENVIRONMENT
+                                                   "CC=${CMAKE_C_COMPILER}")
+    set_tests_properties("${test_name}" PROPERTIES ENVIRONMENT
+                                                   "CC_ID=${CMAKE_C_COMPILER_ID}")
 endforeach()
 
 # provide the 'check' target of make

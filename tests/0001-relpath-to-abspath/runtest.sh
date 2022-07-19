@@ -42,7 +42,7 @@ do_test()
 # run the fake compiler through the wrapper and compare its output
 do_test || exit $?
 
-if valgrind --version; then
+if [[ "$HAS_SANITIZERS" -eq 1 ]] && valgrind --version; then
     # run the wrapper through valgrind if available
     # NOTE: we suppers uses of uninitialized values caused by glibc-static
     do_test valgrind -q --undef-value-errors=no --error-exitcode=7 || exit $?

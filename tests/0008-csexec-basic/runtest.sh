@@ -9,6 +9,7 @@ gcc -Wl,--dynamic-linker="${PATH_TO_CSEXEC_LOADER}" -o out \
 # run
 CSEXEC_WRAP_CMD="${TEST_SRC_DIR}/wrap.sh"     \
     LD_LIBRARY_PATH="${PATH_TO_CSEXEC_LIBS}"  \
+    LD_PRELOAD="${LIBASAN_PATH}"              \
     ./out > stdout.txt 2> stderr.txt
 
 # check

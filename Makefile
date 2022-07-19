@@ -19,11 +19,14 @@ NUM_CPU ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 
 CMAKE ?= cmake
 CTEST ?= ctest -j$(NUM_CPU)
+
 STATIC ?= OFF
+SANITIZERS ?= OFF
 
 CMAKE_BUILD_TYPE ?= RelWithDebInfo
 
-.PHONY: all check clean static distclean distcheck distcheck-static install
+.PHONY: all check clean static sanitizers distclean \
+		distcheck distcheck-static distcheck-sanitizers install
 
 # define $(space) as " " to be used in $(subst ...)
 space := $(subst ,, )
@@ -36,11 +39,15 @@ all:
 	cd cswrap_build && $(CMAKE) \
 		-DCMAKE_BUILD_TYPE="$(CMAKE_BUILD_TYPE)" \
 		-DCMAKE_CTEST_COMMAND="$(CTEST_CMD)" \
-		-DSTATIC_LINKING=$(STATIC) ..
+		-DSTATIC_LINKING="$(STATIC)" \
+		-DSANITIZERS="$(SANITIZERS)" ..
 	$(MAKE) -sC cswrap_build -j$(NUM_CPU)
 
 static:
 	$(MAKE) -s all STATIC=ON
+
+sanitizers:
+	$(MAKE) -s all SANITIZERS=ON
 
 check: all
 	cd cswrap_build && $(MAKE) check
@@ -53,6 +60,9 @@ distclean:
 
 distcheck-static:
 	$(MAKE) -s distcheck STATIC=ON
+
+distcheck-sanitizers:
+	$(MAKE) -s distcheck SANITIZERS=ON
 
 distcheck: distclean
 	$(MAKE) -s check

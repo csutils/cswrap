@@ -21,6 +21,17 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 
+# enable sanitizers
+option(SANITIZERS "Compile with ASan and UBSan" OFF)
+if (SANITIZERS)
+    # enable ASan and UBSan
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address,undefined")
+    # recommended for better error traces
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
+    # make UBSan reports fatal
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-sanitize-recover=all")
+endif()
+
 # link to libc statically
 option(STATIC_LINKING "Link to libc statically" OFF)
 if(STATIC_LINKING)
@@ -137,6 +148,15 @@ if(LD_LINUX_SO)
     target_link_libraries(csexec-preload PRIVATE ${CMAKE_DL_LIBS}
                                                  Threads::Threads)
     install(TARGETS csexec-preload DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+    # use shared libasan for testing of libcsexec-preload.so with Clang
+    # (GCC uses it by default for everything)
+    # for details see https://systemd.io/TESTING_WITH_SANITIZERS/#clang.
+    if (SANITIZERS AND CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        # FIXME: replace with target_link_options for CMake 3.13+
+        set_target_properties(csexec PROPERTIES LINK_FLAGS "-shared-libasan")
+        set_target_properties(csexec-preload PROPERTIES LINK_FLAGS "-shared-libasan")
+    endif()
 
     # check whether ${LD_LINUX_SO} takes --preload, introduced with:
     # https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=8692ebdb

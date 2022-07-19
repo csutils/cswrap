@@ -1,0 +1,8 @@
+# LSan suppressions
+
+# cleaning-up the memory would be too expensive and the allocated memory
+# amount is bounded
+
+# src/cswrap.c
+leak:clone_argv
+leak:handle_flag

@@ -15,6 +15,7 @@ command -v "$ARGVO" && exit 1
 
 (
     LD_LIBRARY_PATH="${PATH_TO_CSEXEC_LIBS}"  \
+    LD_PRELOAD="${LIBASAN_PATH}"              \
     exec -a "$ARGVO" ./out > stdout.txt 2> stderr.txt
 )
 

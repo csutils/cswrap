@@ -11,6 +11,7 @@ gcc -Wl,--dynamic-linker="${PATH_TO_CSEXEC_LOADER}" -o out \
 
 # run
 LD_LIBRARY_PATH="${PATH_TO_CSEXEC_LIBS}"  \
+    LD_PRELOAD="${LIBASAN_PATH}"          \
     ./out > stdout.txt 2> stderr.txt
 
 # check
