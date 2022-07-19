@@ -12,8 +12,12 @@ gcc -Wl,--dynamic-linker="${PATH_TO_CSEXEC_LOADER}" -o out \
 # run
 ARGVO='hopefully, nothing like this is in $PATH'
 command -v "$ARGVO" && exit 1
-export LD_LIBRARY_PATH="${PATH_TO_CSEXEC_LIBS}"
-(exec -a "$ARGVO" ./out > stdout.txt 2> stderr.txt)
 
+(
+    LD_LIBRARY_PATH="${PATH_TO_CSEXEC_LIBS}"  \
+    exec -a "$ARGVO" ./out > stdout.txt 2> stderr.txt
+)
+
+# check
 diff -u stderr.txt "${TEST_SRC_DIR}/stderr.txt" || exit 1
 diff -u stdout.txt "${TEST_SRC_DIR}/stdout.txt" || exit 1
