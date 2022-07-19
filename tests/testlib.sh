@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+
 # test-case library code (needs to be sourced at the beginning of runtest.sh)
 
 # path to the script itself
