@@ -142,14 +142,14 @@ fully automatically.
 %install
 %cmake3_install
 
-install -m0755 -d "\$RPM_BUILD_ROOT%{_libdir}"{,/cswrap}
+install -m0755 -d "%{buildroot}%{_libdir}"{,/cswrap}
 for i in c++ cc g++ gcc clang clang++ cppcheck smatch \\
     divc++ divcc diosc++ dioscc gclang++ gclang goto-gcc \\
     %{_arch}-redhat-linux-c++ \\
     %{_arch}-redhat-linux-g++ \\
     %{_arch}-redhat-linux-gcc
 do
-    ln -s ../../bin/cswrap "\$RPM_BUILD_ROOT%{_libdir}/cswrap/\$i"
+    ln -s ../../bin/cswrap "%{buildroot}%{_libdir}/cswrap/\$i"
 done
 
 %files
