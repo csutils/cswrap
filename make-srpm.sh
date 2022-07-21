@@ -77,6 +77,10 @@ if [[ "$1" != "--generate-spec" ]]; then
 fi
 
 cat > "$SPEC" << EOF
+# Disable in source buils on EPEL <9
+%undefine __cmake_in_source_build
+%undefine __cmake3_in_source_build
+
 %define csexec_archs aarch64 ppc64le s390x x86_64
 
 Name:       $PKG
@@ -127,20 +131,16 @@ fully automatically.
 %autosetup
 
 %build
-mkdir cswrap_build
-cd cswrap_build
-%cmake3 -S.. .. -B. \\
+%cmake3 \\
     -DPATH_TO_WRAP=\"%{_libdir}/cswrap\" \\
     -DSTATIC_LINKING=ON
-make %{?_smp_mflags} VERBOSE=yes
+%cmake3_build
 
 %check
-cd cswrap_build
-ctest3 %{?_smp_mflags} --output-on-failure
+%ctest3
 
 %install
-cd cswrap_build
-make install DESTDIR="\$RPM_BUILD_ROOT"
+%cmake3_install
 
 install -m0755 -d "\$RPM_BUILD_ROOT%{_libdir}"{,/cswrap}
 for i in c++ cc g++ gcc clang clang++ cppcheck smatch \\
