@@ -124,7 +124,7 @@ fully automatically.
 %endif
 
 %prep
-%setup -q
+%autosetup
 
 %build
 mkdir cswrap_build
