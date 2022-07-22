@@ -77,7 +77,7 @@ if [[ "$1" != "--generate-spec" ]]; then
 fi
 
 cat > "$SPEC" << EOF
-# Disable in source buils on EPEL <9
+# Disable in source builds on EPEL <9
 %undefine __cmake_in_source_build
 %undefine __cmake3_in_source_build
 
