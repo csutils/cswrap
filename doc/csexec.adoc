@@ -20,7 +20,7 @@ automatically.  The wrapper needs to be enabled while linking binaries
 using *cswrap* and *csexec-loader*:
 
 -------------------------------------------------
-$ export PATH=$(cswrap --print-path-to-wrap):$PATH
+$ export PATH="$(cswrap --print-path-to-wrap):$PATH"
 $ export CSWRAP_ADD_CFLAGS=-Wl,--dynamic-linker,/usr/bin/csexec-loader
 -------------------------------------------------
 
@@ -64,7 +64,7 @@ ENVIRONMENT VARIABLES
 
 BUGS
 ----
-Please report bugs and feature requests at https://github.com/csutils/cswrap .
+Please report bugs and feature requests at https://github.com/csutils/cswrap.
 
 
 AUTHOR
@@ -74,6 +74,6 @@ Written by Kamil Dudka.
 
 COPYING
 -------
-Copyright \(C) 2020-2021 Red Hat, Inc. Free use of this software is granted
+Copyright \(C) 2020-2022 Red Hat, Inc. Free use of this software is granted
 under the terms of the GNU General Public License (GPL).  See the COPYING file
 for details.
