@@ -99,7 +99,7 @@ static void warn(const char *fmt, ...)
 static int usage(char *argv[])
 {
     fprintf(stderr, "Usage:\n\
-    export PATH=\"`%s --print-path-to-wrap`:$PATH\"\n\n\
+    export PATH=\"$(%s --print-path-to-wrap):$PATH\"\n\n\
     %s is a generic compiler wrapper that translates relative paths to\n\
     absolute paths in diagnostic messages.  Create a symbolic link to %s\n\
     named as your compiler (gcc, g++, ...) and put it to your $PATH.\n\
