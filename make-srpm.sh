@@ -88,7 +88,7 @@ Version:    $VER
 Release:    1%{?dist}
 Summary:    Generic compiler wrapper
 
-License:    GPLv3+
+License:    GPL-3.0-or-later
 URL:        https://github.com/csutils/%{name}
 Source0:    https://github.com/csutils/%{name}/releases/download/%{name}-%{version}/%{name}-%{version}.tar.xz
 
