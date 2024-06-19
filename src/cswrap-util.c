@@ -28,6 +28,18 @@
 #include <string.h>
 #include <unistd.h>                 /* for getcwd() */
 
+/* return true if `str` ends with `suffix` */
+static bool endsWith(const char *str, const char *suffix)
+{
+    const size_t len = strlen(str);
+    const size_t suffixLen = strlen(suffix);
+    if (len < suffixLen)
+        return false;
+
+    str += (len - suffixLen);
+    return STREQ(str, suffix);
+}
+
 /* delete the given argument from the argv array */
 void del_arg_from_argv(char **argv)
 {
@@ -177,6 +189,10 @@ bool is_ignored_file(const char *name)
 
     /* used by cov-build on first invocation of CC/CXX */
     if (MATCH_PREFIX(name, "/tmp/cov-mockbuild/"))
+        return true;
+
+    /* used by cov-build while instrumenting nvcc */
+    if (endsWith(name, ".cudafe1.cpp"))
         return true;
 
     /* used by librdkafka-1.6.0 */

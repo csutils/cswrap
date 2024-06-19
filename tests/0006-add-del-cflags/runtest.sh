@@ -58,3 +58,6 @@ do_check g++ "-Wextra -g -O0 -Wno-extra" "-Wextra -g -O0 -Wno-extra -Wall -Wextr
 
 # preserving flags for conftest.c
 do_check gcc "conftest.c -Werror" "conftest.c -Werror"
+
+# preserving flags for nvcc instrumented by cov-build
+do_check gcc "/tmp/foo_bar.cudafe1.cpp -Werror" "/tmp/foo_bar.cudafe1.cpp -Werror"
