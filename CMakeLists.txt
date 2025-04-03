@@ -1,4 +1,4 @@
-# Copyright (C) 2014 - 2021 Red Hat, Inc.
+# Copyright (C) 2014 - 2025 Red Hat, Inc.
 #
 # This file is part of cswrap.
 #
@@ -16,7 +16,7 @@
 # along with cswrap.  If not, see <http://www.gnu.org/licenses/>.
 
 # using VERSION 3.3 or lower here causes cmake to link with -rdynamic
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.5)
 project(cswrap C)
 enable_testing()
 
