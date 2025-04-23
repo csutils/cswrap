@@ -33,9 +33,7 @@ foreach(runtest ${runtests})
 
     # TODO: we should use configure_file instead
     set_tests_properties("${test_name}" PROPERTIES ENVIRONMENT
-                                                   "CC=${CMAKE_C_COMPILER}")
-    set_tests_properties("${test_name}" PROPERTIES ENVIRONMENT
-                                                   "CC_ID=${CMAKE_C_COMPILER_ID}")
+                         "CC=${CMAKE_C_COMPILER};CC_ID=${CMAKE_C_COMPILER_ID}")
 endforeach()
 
 # provide the 'check' target of make
