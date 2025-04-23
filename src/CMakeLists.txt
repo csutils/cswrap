@@ -84,7 +84,7 @@ macro(build_custom_target dst src deps flags)
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${src} ${deps}
         COMMENT "Building ${dst} with flags: ${flags_string}"
         VERBATIM)
-    add_custom_target(${dst} ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${dst})
+    add_custom_target(${dst}-tgt ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${dst})
 endmacro()
 
 # check if ld-linux.so takes the given option and define corresponding macros
