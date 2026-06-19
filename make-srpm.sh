@@ -79,7 +79,6 @@ fi
 cat > "$SPEC" << EOF
 # Disable in source builds on EPEL <9
 %undefine __cmake_in_source_build
-%undefine __cmake3_in_source_build
 
 %define csexec_archs aarch64 ppc64le s390x x86_64
 
@@ -93,7 +92,7 @@ URL:        https://github.com/csutils/%{name}
 Source0:    https://github.com/csutils/%{name}/releases/download/%{name}-%{version}/%{name}-%{version}.tar.xz
 
 BuildRequires: asciidoc
-BuildRequires: cmake3
+BuildRequires: cmake
 BuildRequires: gcc
 
 # csmock copies the resulting cswrap binary into mock chroot, which may contain
@@ -131,16 +130,16 @@ fully automatically.
 %autosetup
 
 %build
-%cmake3 \\
+%cmake                                        \\
     -DPATH_TO_WRAP=\"%{_libdir}/cswrap\" \\
     -DSTATIC_LINKING=ON
-%cmake3_build
+%cmake_build
 
 %check
-%ctest3
+%ctest
 
 %install
-%cmake3_install
+%cmake_install
 
 install -m0755 -d "%{buildroot}%{_libdir}"{,/cswrap}
 for i in c++ cc g++ gcc clang clang++ cppcheck smatch \\
