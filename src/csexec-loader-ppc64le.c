@@ -60,8 +60,8 @@ void _start(void)
         "mr %%r4, %1;"              // exec_args
         "mr %%r5, %2;"              // env
         "sc;"                       // ppc64 syscall insn
-        "li %%r3, $0x7F;"           // execve() has failed, handle it as ENOENT
-        "mr %%r0, 1;"               // exit()
+        "li %%r3, 0x7F;"            // execve() has failed, handle it as ENOENT
+        "li %%r0, 1;"               // exit()
         "sc" :
         : "r" (CSEXEC_BIN)          // %0
         , "r" (exec_args)           // %1
